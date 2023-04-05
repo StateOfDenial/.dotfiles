@@ -1,0 +1,5 @@
+brew 'tfenv'
+brew 'pyenv'
+brew 'goenv'
+brew 'terraform-docs'
+brew 'zplug'

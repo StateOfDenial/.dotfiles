@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+xargs -a ubuntu-packages sudo apt install
+
+brew bundle --file Brewfile.ubuntu
+
+if [[ -z $STOW_FOLDERS ]]; then
+    STOW_FOLDERS="bin,nvim,tmux,zsh"
+fi
+
+if [[ -z $DOTFILES ]]; then
+    DOTFILES=$HOME/.dotfiles
+fi
+
+STOW_FOLDERS=$STOW_FOLDERS DOTFILES=$DOTFILES $DOTFILES/install

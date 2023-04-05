@@ -1,0 +1,10 @@
+apt-transport-https
+ca-certificates
+gnupg
+google-cloud-cli
+zsh
+tmux
+git
+jq
+bat
+fzf
