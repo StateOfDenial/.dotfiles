@@ -74,8 +74,6 @@ zplug load
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-export PATH="/Users/dbrown/.pyenv/shims:${PATH}"
-
 # History settings
 export HISTFILE=~/.history
 export HISTSIZE=500000
