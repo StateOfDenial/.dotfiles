@@ -41,12 +41,18 @@ alias vim="nvim"
 alias ls='ls --color=always'
 alias la='ls -la --color=always'
 
+export PATH="$HOME/.local/scripts:$PATH"
+
 autoload -U +X bashcompinit && bashcompinit
 
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(goenv init -)"
+
+export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib" 
+export CPPFLAGS="-I$(brew --prefix openssl)/include" 
+export CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)"
 
 export ZPLUG_HOME=$(brew --prefix)/opt/zplug
 source $ZPLUG_HOME/init.zsh
