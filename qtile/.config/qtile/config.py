@@ -24,7 +24,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from libqtile import bar, layout, widget
+import os
+import re
+import socket
+import subprocess
+from libqtile import qtile
+from libqtile import bar, layout, widget, hook
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 
@@ -57,7 +62,16 @@ keys = [
         desc="Grow window to the right"),
     Key([mod, "control"], "j", lazy.layout.grow_down(), desc="Grow window down"),
     Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
-    Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
+    # Monadtall grow and shrink main
+    Key([mod, "mod1"], "h", lazy.layout.grow(),
+        desc="MonadTall grow main window"),
+    Key([mod, "mod1"], "l", lazy.layout.shrink(),
+        desc="MonadTall shrink main window"),
+    Key([mod, "mod1"], "o", lazy.layout.maximize(),
+        desc="MonadTall maximize window"),
+    Key([mod, "mod1"], "n", lazy.layout.normalize(),
+        desc="MonadTall normalize window"),
+    Key([mod], "n", lazy.next_screen(), desc="Focus next monitor"),
     # Toggle between split and unsplit sides of stack.
     # Split = all windows displayed
     # Unsplit = 1 window displayed, like Max layout, but still with
@@ -74,44 +88,46 @@ keys = [
     Key([mod], "w", lazy.window.kill(), desc="Kill focused window"),
     Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
-    Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
+    #Key([mod], "r", lazy.spawn(), desc="Spawn a command using a prompt widget"),
+    Key([mod], "r", lazy.spawn("wofi --show drun,run"), desc="Spawn a command using a prompt widget"),
+    Key([mod, "shift"], "r",
+        lazy.restart(),
+        desc='Restart Qtile'
+        ),
+    Key([mod], "b", lazy.hide_show_bar(), desc="Toggle showing the bar"), 
 ]
 
-groups = [Group(i) for i in "123456789"]
+#groups = [Group(i) for i in "123456789"]
 
-for i in groups:
-    keys.extend(
-        [
-            # mod1 + letter of group = switch to group
-            Key(
-                [mod],
-                i.name,
-                lazy.group[i.name].toscreen(),
-                desc="Switch to group {}".format(i.name),
-            ),
-            # mod1 + shift + letter of group = switch to & move focused window to group
-            Key(
-                [mod, "shift"],
-                i.name,
-                lazy.window.togroup(i.name, switch_group=True),
-                desc="Switch to & move focused window to group {}".format(
-                    i.name),
-            ),
-            # Or, use below if you prefer not to switch to that group.
-            # # mod1 + shift + letter of group = move focused window to group
-            # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
-            #     desc="move focused window to group {}".format(i.name)),
-        ]
-    )
+groups = [Group("DEV", layout="monadtall"),
+          Group("WWW", matches=[Match(title=["firefox"])], layout="monadtall"),
+          Group("CHAT", layout="monadtall"),
+          Group("GAME", matches=[Match(title=["steam"])], layout="max"),
+          Group("SYS", layout="monadtall"),
+          Group("DOC", layout="monadtall"),
+          Group("MUS", layout="monadtall")]
+
+# Allow MODKEY+[0 through 9] to bind to groups, see https://docs.qtile.org/en/stable/manual/config/groups.html
+# MOD4 + index Number : Switch to Group[index]
+# MOD4 + shift + index Number : Send active window to another Group
+from libqtile.dgroups import simple_key_binder
+dgroups_key_binder = simple_key_binder(mod)
+
+layout_theme = {
+        "border_width": 1,
+        "margin": 8,
+        "border_focus": "#51afef",
+        "borders_normal": "#161616"
+        }
 
 layouts = [
-    layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
+    layout.MonadTall(**layout_theme),
     layout.Max(),
+    layout.Columns(**layout_theme),
     # Try more layouts by unleashing below layouts.
     # layout.Stack(num_stacks=2),
     # layout.Bsp(),
     # layout.Matrix(),
-    layout.MonadTall(),
     # layout.MonadWide(),
     # layout.RatioTile(),
     # layout.Tile(),
@@ -120,42 +136,99 @@ layouts = [
     # layout.Zoomy(),
 ]
 
+
+colours = [["#161616", "#161616"],
+          ["#282828", "#282828"],
+          ["#dfdfdf", "#dfdfdf"],
+          ["#ff6c6b", "#ff6c6b"],
+          ["#98be65", "#98be65"],
+          ["#da8548", "#da8548"],
+          ["#51afef", "#51afef"],
+          ["#c678dd", "#c678dd"],
+          ["#46d9ff", "#46d9ff"],
+          ["#a9a1e1", "#a9a1e1"]]
+
+prompt = "{0}@{1}: ".format(os.environ["USER"], socket.gethostname())
+
 widget_defaults = dict(
     font="sans",
     fontsize=12,
     padding=3,
+    background=colours[2]
 )
 extension_defaults = widget_defaults.copy()
 
-screens = [
-    Screen(
-        bottom=bar.Bar(
-            [
-                widget.CurrentLayout(),
-                widget.GroupBox(),
-                widget.Prompt(),
-                widget.WindowName(),
+def init_widgets_list():
+    widgets_list = [
+                widget.Sep(
+                    linewidth = 0,
+                    padding = 6,
+                    foreground = colours[2],
+                    background = colours[0]
+                    ),
+                widget.CurrentLayout(foreground = colours[2],
+                                     background = colours[0],
+                                     padding = 5),
+                widget.GroupBox(
+                       fontsize = 9,
+                       margin_y = 3,
+                       margin_x = 0,
+                       padding_y = 5,
+                       padding_x = 3,
+                       borderwidth = 3,
+                       active = colours[2],
+                       inactive = colours[7],
+                       rounded = False,
+                       highlight_color = colours[1],
+                       highlight_method = "line",
+                       this_current_screen_border = colours[6],
+                       this_screen_border = colours [4],
+                       other_current_screen_border = colours[6],
+                       other_screen_border = colours[4],
+                       foreground = colours[2],
+                       background = colours[0]
+
+                    ),
+                widget.WindowName(foreground = colours[6],
+                                  background = colours[0],
+                                  padding = 0),
                 widget.Chord(
                     chords_colors={
                         "launch": ("#ff0000", "#ffffff"),
                     },
                     name_transform=lambda name: name.upper(),
                 ),
-                widget.TextBox("default config", name="default"),
-                widget.TextBox("Press &lt;M-r&gt; to spawn",
-                               foreground="#d75f5f"),
                 # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-                widget.StatusNotifier(),
+                widget.StatusNotifier(
+                    background = colours[0]),
                 # widget.Systray(),
-                widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
-                widget.QuickExit(),
-            ],
-            24,
-            # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
-            # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
-        ),
-    ),
-]
+                widget.Clock(
+                    foreground = colours[6],
+                    background = colours[0],
+                    format="%Y-%m-%d %a %I:%M %p"
+                    )
+            ]
+    return widgets_list
+
+def init_widgets_screen1():
+    widgets_screen1 = init_widgets_list()
+    #del widgets_screen1[9:10]               # Slicing removes unwanted widgets (systray) on Monitors 1,3
+    return widgets_screen1
+
+def init_widgets_screen2():
+    widgets_screen2 = init_widgets_list()
+    return widgets_screen2                 # Monitor 2 will display all widgets in widgets_list
+
+def init_screens():
+    return [Screen(top=bar.Bar(widgets=init_widgets_screen1(), opacity=1.0, size=20)),
+            Screen(top=bar.Bar(widgets=init_widgets_screen2(), opacity=1.0, size=20))]
+
+
+if __name__ in ["config", "__main__"]:
+    screens = init_screens()
+    widgets_list = init_widgets_list()
+    widgets_screen1 = init_widgets_screen1()
+    widgets_screen2 = init_widgets_screen2()
 
 # Drag floating layouts.
 mouse = [
@@ -166,7 +239,6 @@ mouse = [
     Click([mod], "Button2", lazy.window.bring_to_front()),
 ]
 
-dgroups_key_binder = None
 dgroups_app_rules = []  # type: list
 follow_mouse_focus = True
 bring_front_click = False
@@ -189,7 +261,12 @@ reconfigure_screens = True
 
 # If things like steam games want to auto-minimize themselves when losing
 # focus, should we respect this or not?
-auto_minimize = True
+auto_minimize = False
+
+@hook.subscribe.startup_once
+def start_once():
+    home = os.path.expanduser("~")
+    subprocess.call([home + "/.config/qtile/autostart.sh"])
 
 # When using the Wayland backend, this can be used to configure input devices.
 wl_input_rules = None
