@@ -89,7 +89,8 @@ keys = [
     Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
     #Key([mod], "r", lazy.spawn(), desc="Spawn a command using a prompt widget"),
-    Key([mod], "r", lazy.spawn("wofi --show drun,run"), desc="Spawn a command using a prompt widget"),
+    #Key([mod], "r", lazy.spawn("wofi --show drun,run"), desc="Spawn a command using a prompt widget"),
+    Key([mod], "r", lazy.spawn("rofi -show combi -combi-modes \"window,drun,ssh\" -modes combi"), desc="Spawn a command using a prompt widget"),
     Key([mod, "shift"], "r",
         lazy.restart(),
         desc='Restart Qtile'
@@ -114,10 +115,10 @@ from libqtile.dgroups import simple_key_binder
 dgroups_key_binder = simple_key_binder(mod)
 
 layout_theme = {
-        "border_width": 1,
+        "border_width": 2,
         "margin": 8,
-        "border_focus": "#51afef",
-        "borders_normal": "#161616"
+        "border_focus": "#A7C080",
+        "borders_normal": "#374145"
         }
 
 layouts = [
@@ -137,16 +138,16 @@ layouts = [
 ]
 
 
-colours = [["#161616", "#161616"],
+colours = [["#2E383C", "#2E383C"],
           ["#282828", "#282828"],
-          ["#dfdfdf", "#dfdfdf"],
-          ["#ff6c6b", "#ff6c6b"],
-          ["#98be65", "#98be65"],
-          ["#da8548", "#da8548"],
-          ["#51afef", "#51afef"],
-          ["#c678dd", "#c678dd"],
-          ["#46d9ff", "#46d9ff"],
-          ["#a9a1e1", "#a9a1e1"]]
+          ["#D3C6AA", "#D3C6AA"],
+          ["#83C092", "#83C092"],
+          ["#A7C080", "#A7C080"],
+          ["#DBBC7F", "#DBBC7F"],
+          ["#7FBBB3", "#7FBBB3"],
+          ["#D699B6", "#D699B6"],
+          ["#E69875", "#E69875"],
+          ["#E67E80", "#E67E80"]]
 
 prompt = "{0}@{1}: ".format(os.environ["USER"], socket.gethostname())
 
@@ -154,7 +155,7 @@ widget_defaults = dict(
     font="sans",
     fontsize=12,
     padding=3,
-    background=colours[2]
+    background=colours[0]
 )
 extension_defaults = widget_defaults.copy()
 

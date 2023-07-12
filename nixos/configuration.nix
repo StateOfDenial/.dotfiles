@@ -47,6 +47,7 @@
   };
 
   programs.steam.enable = true;
+  services.flatpak.enable = true;
 
   # Configure keymap in X11
   services.xserver = {
@@ -57,19 +58,29 @@
       #lightdm.enable = true;
       #lightdm.greeters.gtk.enable = true;
       gdm.enable = true;
+      #gdm.wayland = true;
     };
     desktopManager = {
       #gnome.enable = true;
       xfce.enable = true;
     };
     windowManager = {
-      #qtile.enable = true;
+      qtile.enable = true;
       #qtile.backend = "wayland";
       #qtile.package = pkgs.qtile;
     };
   };
 
-      nixpkgs.overlays = [
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-wlr
+      xdg-desktop-portal-kde
+      xdg-desktop-portal-gtk  
+    ];
+  };
+
+     /* nixpkgs.overlays = [
   (self: super: {
     qtile-unwrapped = super.qtile-unwrapped.overrideAttrs(_: rec {
       postInstall = let
@@ -88,13 +99,13 @@ echo "${qtileSession}" > $out/share/wayland-sessions/qtile.desktop
       passthru.providedSessions = [ "qtile" ];
     });
   })
-];
+];*/
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.denial = {
     isNormalUser = true;
     description = "Daniel Brown";
-    extraGroups = [ "networkmanager" "wheel" "audio" ];
+    extraGroups = [ "networkmanager" "wheel" "audio" "libvirtd" ];
     packages = with pkgs; [];
   };
 
@@ -114,10 +125,12 @@ echo "${qtileSession}" > $out/share/wayland-sessions/qtile.desktop
     zsh
     zplug
     go
+    gopls
     gccgo13
     rustup
     unzip
     fzf
+    ripgrep
     flameshot
     google-cloud-sdk
     bat
@@ -126,17 +139,40 @@ echo "${qtileSession}" > $out/share/wayland-sessions/qtile.desktop
     neofetch
     steam
     steam-run
+    (lutris.override {
+      extraPkgs = pkgs: [
+        wine
+      ];
+      extraLibraries = pkgs: [
+        libadwaita
+        gtk4
+      ];
+    })
     # qtile stuff
     qtile
     brightnessctl
     alsa-utils
+    picom
+    rofi
     wofi
     swaybg
+    feh
+    xorg.xrandr
     wlr-randr
     
     stow
     cifs-utils
+    dig
+    virt-manager
+    virt-viewer
+    qemu
   ];
+
+  virtualisation.libvirtd.enable = true;
+  programs.dconf.enable = true;
+
+  services.picom.enable = true;
+  services.picom.vSync = true;
 
   hardware.opengl.extraPackages = [
     #pkgs.rocm-opencl-icd
@@ -176,6 +212,13 @@ echo "${qtileSession}" > $out/share/wayland-sessions/qtile.desktop
   };*/
   programs.zsh.enable = true;
   users.defaultUserShell = pkgs.zsh;
+  environment.binsh = "${pkgs.zsh}/bin/zsh";
+  system.activationScripts = {
+    zsh.text = 
+    ''
+      ln -sfn ${config.environment.usrbinenv} /bin/zsh
+    '';
+  };
 
   security = {
     sudo.enable = true;

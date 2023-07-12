@@ -55,7 +55,7 @@ export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib"
 export CPPFLAGS="-I$(brew --prefix openssl)/include" 
 export CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)"
 
-export ZPLUG_HOME=$(brew --prefix)/opt/zplug
+export ZPLUG_HOME="$HOME/.local/zplug"
 source $ZPLUG_HOME/init.zsh
 zplug "zsh-users/zsh-completions"
 zplug "zsh-users/zsh-autosuggestions"
