@@ -1,7 +1,6 @@
 apt-transport-https
 ca-certificates
 gnupg
-google-cloud-cli
 zsh
 tmux
 git
@@ -9,3 +8,19 @@ jq
 bat
 fzf
 stow
+libgdk-pixbuf-2.0-0
+x11-xserver-utils
+gdm3
+vim
+curl
+picom
+xserver-xorg
+xinit
+libpangocairo-1.0-0
+brave-browser
+wofi
+rofi
+python3
+python3-pip
+python3-setuptools
+cifs-utils

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Qtile
+Comment=Qtile Xsession
+Exec=qtile start
+Type=Application
+Keywords=wm;tiling

@@ -2,7 +2,7 @@
 
 os=$(uname)
 
-if [[ "$os" -eq "Darwin" ]]; then
+if [ "$os" = "Darwin" ]; then
     eval "$(brew shellenv)"
 else
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"

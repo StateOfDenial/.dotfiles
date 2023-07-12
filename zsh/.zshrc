@@ -50,12 +50,15 @@ export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(goenv init -)"
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib" 
 export CPPFLAGS="-I$(brew --prefix openssl)/include" 
 export CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)"
 
-export ZPLUG_HOME="$HOME/.local/zplug"
+export ZPLUG_HOME=$(brew --prefix zplug)
 source $ZPLUG_HOME/init.zsh
 zplug "zsh-users/zsh-completions"
 zplug "zsh-users/zsh-autosuggestions"
