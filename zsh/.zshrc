@@ -4,6 +4,7 @@
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
+export XDG_CONFIG_HOME="$HOME/.config/"
 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
@@ -41,7 +42,7 @@ alias vim="nvim"
 alias ls='ls --color=always'
 alias la='ls -la --color=always'
 
-export PATH="$HOME/.local/scripts:$PATH"
+export PATH="$HOME/.local/scripts:$GOPATH/bin:$PATH"
 
 autoload -U +X bashcompinit && bashcompinit
 
@@ -50,8 +51,34 @@ command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(goenv init -)"
 
-export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib" 
-export CPPFLAGS="-I$(brew --prefix openssl)/include" 
+eval "$(bw completion --shell zsh); compdef _bw bw;"
+eval "$(chef completion zsh)"
+
+# fzf niceness
+if [ -f ~/.fzf.zsh ]; then
+    export FZF_DEFAULT_OPTS="--layout=reverse --inline-info"
+
+    export FZF_CTRL_R_OPTS="
+    --preview 'echo {}' --preview-window up:3:hidden:wrap
+    --bind 'ctrl-/:toggle-preview'
+    --bind 'ctrl-y:execute-silent(echo -n {2..} | pbcopy)+abort'
+    --color header:italic
+    --header 'Press CTRL-Y to copy command into clipboard'"
+
+    export FZF_ALT_C_OPTS=" --preview 'tree -C {} | head -200'"
+
+    export FZF_CTRL_T_OPTS="
+    --preview 'bat -n --color=always {}'
+    --bind 'ctrl-/:change-preview-window(down|hidden|)'"
+    source ~/.fzf.zsh
+fi
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+
+export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib"
+export CPPFLAGS="-I$(brew --prefix openssl)/include"
 export CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)"
 
 export ZPLUG_HOME=$(brew --prefix)/opt/zplug
@@ -92,3 +119,8 @@ setopt hist_expire_dups_first # delete duplicates first when HISTFILE size excee
 setopt hist_ignore_dups       # ignore duplicated commands history list
 setopt hist_ignore_space      # ignore commands that start with space
 setopt hist_verify            # show command with history expansion to user before running i
+
+bindkey "\e[1;3D" backward-word # ⌥←
+bindkey "\e[1;3C" forward-word # ⌥→
+#bindkey "^[[1;2D" beginning-of-line
+#bindkey "^[[1;2C" end-of-line

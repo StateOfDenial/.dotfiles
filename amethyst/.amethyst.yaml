@@ -22,9 +22,11 @@ window-margin-size: 8
 floating:
   - org.keepassxc.keepassxc
   - com.apple.systempreferences
+  - com.raycast.macos
 
 # I like having the mouse follow my focus
 mouse-follows-focus: true
+focus-follows-mouse: false
 # For others people using my computer
 mouse-swaps-windows: true
 mouse-resizes-windows: true
@@ -153,7 +155,7 @@ select-wide-layout:
   key: s
 
 # Select fullscreen layout
-select-fullscreen-layout:
+toggle-fullscreen-layout:
   mod: mod1
   key: d
 
