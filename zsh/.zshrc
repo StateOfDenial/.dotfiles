@@ -38,11 +38,13 @@ fi
 alias zshconfig="nvim ~/.zshrc"
 alias ohmyzsh="nvim ~/.oh-my-zsh"
 alias vim="nvim"
+alias v="nvim"
 alias ls='ls --color=always'
 alias la='ls -la --color=always'
 
 export PATH="$HOME/.local/scripts:$PATH"
 export PATH="$HOME/.local/kitty.app/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 autoload -U +X bashcompinit && bashcompinit
 
@@ -79,10 +81,30 @@ if ! zplug check --verbose; then
 fi
 
 # Then, source plugins and add commands to $PATH
+export ZPLUG_LOG_LOAD_SUCCESS=false
+export ZPLUG_LOG_LOAD_FAILURE=false
 zplug load
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Work related things
+[[ ! -f ~/.wprc ]] || source ~/.wprc
+
+# If batcat is installed, alias cat
+if command -v batcat &>/dev/null; then
+    alias cat=batcat
+fi
+
+if command -v fzf &>/dev/null; then
+    source /usr/share/doc/fzf/examples/key-bindings.zsh
+    source /usr/share/doc/fzf/examples/completion.zsh
+    export FZF_DEFAULT_OPTS='--preview "batcat -n --color always --line-range :50 {}"'
+    export FZF_CTRL_R_OPTS="
+      --preview 'echo {}' --preview-window up:3:hidden:wrap
+      --bind 'ctrl-/:toggle-preview'
+      --bind 'ctrl-y:execute-silent(echo -n {2..} | wl-copy)+abort'"
+fi
 
 # History settings
 export HISTFILE=~/.history
