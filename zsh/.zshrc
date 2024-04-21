@@ -43,6 +43,9 @@ alias la='ls -la --color=always'
 
 export PATH="$HOME/.local/scripts:$PATH"
 export PATH="$HOME/.local/kitty.app/bin:$PATH"
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
 
 autoload -U +X bashcompinit && bashcompinit
 
@@ -53,6 +56,14 @@ eval "$(goenv init -)"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# enable fzf binds on shell
+export FZF_CTRL_R_OPTS="--height 60% \
+    --border sharp \
+    --layout reverse"
+
+source /usr/share/doc/fzf/examples/key-bindings.zsh
+source /usr/share/doc/fzf/examples/completion.zsh
 
 export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib" 
 export CPPFLAGS="-I$(brew --prefix openssl)/include" 
@@ -96,3 +107,12 @@ setopt hist_expire_dups_first # delete duplicates first when HISTFILE size excee
 setopt hist_ignore_dups       # ignore duplicated commands history list
 setopt hist_ignore_space      # ignore commands that start with space
 setopt hist_verify            # show command with history expansion to user before running i
+
+# [Ctrl-RightArrow] - move forward one word
+bindkey '^[[1;5C' forward-word
+# [Ctrl-LeftArrow] - move backward one word
+bindkey '^[[1;5D' backward-word
+# [Alt-RightArrow] - move to end of line
+bindkey '^[[1;3C' end-of-line
+# [Alt-LeftArrow] - move to start of line
+bindkey '^[[1;3D' beginning-of-line
