@@ -18,7 +18,7 @@ git clone --depth 1 https://github.com/wbthomason/packer.nvim\
  ~/.local/share/nvim/site/pack/packer/start/packer.nvim
 
 if [[ -z $STOW_FOLDERS ]]; then
-    STOW_FOLDERS="bin,nvim,tmux,zsh,picom,kitty,"
+    STOW_FOLDERS="bin,nvim,tmux,zsh,picom,kitty,qtile,redshift"
 fi
 
 if [[ -z $DOTFILES ]]; then
@@ -30,10 +30,11 @@ STOW_FOLDERS=$STOW_FOLDERS DOTFILES=$DOTFILES $DOTFILES/install
 #set zsh as default
 sudo usermod -s /bin/zsh denial
 #qtile install
+cd ~
 git clone https://github.com/qtile/qtile.git
 cd qtile
 sudo python3 setup.py install
-cd ..
+cd ~/.dotfiles
 sudo cp ./debian/qtile.desktop /usr/share/xsessions
 # install kitty terminal
 curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
@@ -50,7 +51,7 @@ goenv global 1.20.5
 
 #base npm setup
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-zsh nvm install 9.8
+nvm install 9.8
 
 # do samba join?
 # mkdir ~/nas

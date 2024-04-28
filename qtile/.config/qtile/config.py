@@ -24,6 +24,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from libqtile.dgroups import simple_key_binder
 import os
 import re
 import socket
@@ -32,6 +33,7 @@ from libqtile import qtile
 from libqtile import bar, layout, widget, hook
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
+from qtile_extras import widget as extra_widgets
 
 mod = "mod4"
 terminal = "kitty"
@@ -88,43 +90,52 @@ keys = [
     Key([mod], "w", lazy.window.kill(), desc="Kill focused window"),
     Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
-    #Key([mod], "r", lazy.spawn(), desc="Spawn a command using a prompt widget"),
-    #Key([mod], "r", lazy.spawn("wofi --show drun,run"), desc="Spawn a command using a prompt widget"),
-    Key([mod], "r", lazy.spawn("rofi -show combi -combi-modes \"window,drun,ssh\" -modes combi"), desc="Spawn a command using a prompt widget"),
+    # Key([mod], "r", lazy.spawn(), desc="Spawn a command using a prompt widget"),
+    # Key([mod], "r", lazy.spawn("wofi --show drun,run"), desc="Spawn a command using a prompt widget"),
+    Key([mod], "r", lazy.spawn("rofi -show combi -combi-modi \"window,drun,ssh,run\" -modes combi"),
+        desc="Spawn a command using a prompt widget"),
     Key([mod, "shift"], "r",
         lazy.restart(),
         desc='Restart Qtile'
         ),
-    Key([mod], "b", lazy.hide_show_bar(), desc="Toggle showing the bar"), 
+    Key([mod], "b", lazy.hide_show_bar(), desc="Toggle showing the bar"),
+    # Quick launch common apps
+    Key([mod, "control"], "b", lazy.spawn("brave-browser")),
+    Key([mod, "control"], "s", lazy.spawn("steam")),
+    Key([mod, "control"], "d", lazy.spawn("discord")),
 ]
 
-#groups = [Group(i) for i in "123456789"]
+# groups = [Group(i) for i in "123456789"]
 
 groups = [Group("DEV", layout="monadtall"),
-          Group("WWW", matches=[Match(title=["firefox"])], layout="monadtall"),
-          Group("CHAT", layout="monadtall"),
-          Group("GAME", matches=[Match(title=["steam"])], layout="max"),
+          Group("WWW", layout="monadtall",
+                matches=[Match(re.compile(r"^(brave-browser)$"))]),
+          Group("CHAT", layout="monadtall", spawn="discord",
+                matches=[Match(wm_class="Discord")]),
+          Group("GAME", layout="max", spawn="steam",
+                matches=[Match(wm_class="Steam")]),
           Group("SYS", layout="monadtall"),
           Group("DOC", layout="monadtall"),
           Group("MUS", layout="monadtall")]
 
-# Allow MODKEY+[0 through 9] to bind to groups, see https://docs.qtile.org/en/stable/manual/config/groups.html
+# Allow MODKEY+[0 through 9] to bind to groups, see
+# https://docs.qtile.org/en/stable/manual/config/groups.html
 # MOD4 + index Number : Switch to Group[index]
 # MOD4 + shift + index Number : Send active window to another Group
-from libqtile.dgroups import simple_key_binder
 dgroups_key_binder = simple_key_binder(mod)
 
 layout_theme = {
-        "border_width": 2,
-        "margin": 8,
-        "border_focus": "#A7C080",
-        "borders_normal": "#374145"
-        }
+    "border_width": 2,
+    "margin": 8,
+    "border_focus": "#A7C080",
+    "borders_normal": "#374145"
+}
 
 layouts = [
     layout.MonadTall(**layout_theme),
     layout.Max(),
     layout.Columns(**layout_theme),
+    layout.Floating(),
     # Try more layouts by unleashing below layouts.
     # layout.Stack(num_stacks=2),
     # layout.Bsp(),
@@ -139,15 +150,16 @@ layouts = [
 
 
 colours = [["#2E383C", "#2E383C"],
-          ["#282828", "#282828"],
-          ["#D3C6AA", "#D3C6AA"],
-          ["#83C092", "#83C092"],
-          ["#A7C080", "#A7C080"],
-          ["#DBBC7F", "#DBBC7F"],
-          ["#7FBBB3", "#7FBBB3"],
-          ["#D699B6", "#D699B6"],
-          ["#E69875", "#E69875"],
-          ["#E67E80", "#E67E80"]]
+           ["#282828", "#282828"],
+           ["#D3C6AA", "#D3C6AA"],
+           ["#83C092", "#83C092"],
+           ["#A7C080", "#A7C080"],
+           ["#DBBC7F", "#DBBC7F"],
+           ["#7FBBB3", "#7FBBB3"],
+           ["#D699B6", "#D699B6"],
+           ["#E69875", "#E69875"],
+           ["#E67E80", "#E67E80"]]
+colour_trans_black = ["#00000000", "#00000000", "#00000000"]
 
 prompt = "{0}@{1}: ".format(os.environ["USER"], socket.gethostname())
 
@@ -159,70 +171,97 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
+
 def init_widgets_list():
     widgets_list = [
-                widget.Sep(
-                    linewidth = 0,
-                    padding = 6,
-                    foreground = colours[2],
-                    background = colours[0]
-                    ),
-                widget.CurrentLayout(foreground = colours[2],
-                                     background = colours[0],
-                                     padding = 5),
-                widget.GroupBox(
-                       fontsize = 9,
-                       margin_y = 3,
-                       margin_x = 0,
-                       padding_y = 5,
-                       padding_x = 3,
-                       borderwidth = 3,
-                       active = colours[2],
-                       inactive = colours[7],
-                       rounded = False,
-                       highlight_color = colours[1],
-                       highlight_method = "line",
-                       this_current_screen_border = colours[6],
-                       this_screen_border = colours [4],
-                       other_current_screen_border = colours[6],
-                       other_screen_border = colours[4],
-                       foreground = colours[2],
-                       background = colours[0]
-
-                    ),
-                widget.WindowName(foreground = colours[6],
-                                  background = colours[0],
-                                  padding = 0),
-                widget.Chord(
-                    chords_colors={
-                        "launch": ("#ff0000", "#ffffff"),
-                    },
-                    name_transform=lambda name: name.upper(),
-                ),
-                # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-                widget.StatusNotifier(
-                    background = colours[0]),
-                # widget.Systray(),
-                widget.Clock(
-                    foreground = colours[6],
-                    background = colours[0],
-                    format="%Y-%m-%d %a %I:%M %p"
-                    )
-            ]
+        widget.Sep(
+            linewidth=0,
+            padding=6,
+            foreground=colours[2],
+            background=colours[0]
+        ),
+        widget.OpenWeather(
+            app_key="bdd7a522ba396eefafcc7934577d3fd8",
+            background=colours[0],
+            location="perth,AU"
+        ),
+        widget.Spacer(
+            background=colour_trans_black,
+            length=bar.STRETCH),
+        widget.CurrentLayoutIcon(foreground=colours[2],
+                                 background=colours[0],
+                                 padding=5),
+        widget.GroupBox(
+            fontsize=9,
+            margin_y=3,
+            margin_x=0,
+            padding_y=5,
+            padding_x=3,
+            borderwidth=3,
+            active=colours[2],
+            inactive=colours[7],
+            rounded=False,
+            highlight_color=colours[1],
+            highlight_method="line",
+            this_current_screen_border=colours[6],
+            this_screen_border=colours[4],
+            other_current_screen_border=colours[6],
+            other_screen_border=colours[4],
+            foreground=colours[2],
+            background=colours[0]
+        ),
+        # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
+        # widget.StatusNotifier(
+        #   background=colours[0]),
+        widget.Spacer(
+            background=colour_trans_black,
+            length=bar.STRETCH),
+        widget.Systray(
+            background=colours[0]),
+        widget.Sep(
+            linewidth=0,
+            padding=6,
+            foreground=colours[2],
+            background=colours[0]
+        ),
+        widget.Memory(foreground=colours[6]),
+        widget.Sep(
+            linewidth=0,
+            padding=6,
+            foreground=colours[2],
+            background=colours[0]
+        ),
+        extra_widgets.PulseVolume(foreground=colours[4]),
+        widget.Clock(
+            foreground=colours[6],
+            background=colours[0],
+            format="%Y-%m-%d %a %I:%M %p"
+        )
+    ]
     return widgets_list
+
 
 def init_widgets_screen1():
     widgets_screen1 = init_widgets_list()
-    #del widgets_screen1[9:10]               # Slicing removes unwanted widgets (systray) on Monitors 1,3
+    # del widgets_screen1[9:10]               # Slicing removes unwanted widgets (systray) on Monitors 1,3
     return widgets_screen1
+
 
 def init_widgets_screen2():
     widgets_screen2 = init_widgets_list()
-    return widgets_screen2                 # Monitor 2 will display all widgets in widgets_list
+    del widgets_screen2[6:8]
+    return widgets_screen2
+
 
 def init_screens():
-    return [Screen(top=bar.Bar(widgets=init_widgets_screen1(), opacity=1.0, size=20)),
-            Screen(top=bar.Bar(widgets=init_widgets_screen2(), opacity=1.0, size=20))]
+    return [Screen(top=bar.Bar(widgets=init_widgets_screen1(),
+                               margin=[6, 6, 2, 6],
+                               background=colour_trans_black,
+                               size=20)),
+            Screen(top=bar.Bar(widgets=init_widgets_screen2(),
+                               margin=[6, 6, 2, 6],
+                               background=colour_trans_black,
+                               size=20))]
 
 
 if __name__ in ["config", "__main__"]:
@@ -264,10 +303,12 @@ reconfigure_screens = True
 # focus, should we respect this or not?
 auto_minimize = False
 
+
 @hook.subscribe.startup_once
 def start_once():
     home = os.path.expanduser("~")
     subprocess.call([home + "/.config/qtile/autostart.sh"])
+
 
 # When using the Wayland backend, this can be used to configure input devices.
 wl_input_rules = None
