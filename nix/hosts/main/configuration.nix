@@ -78,46 +78,75 @@
     packages = with pkgs; [];
   };
 
+  security.sudo.extraRules = [
+    { 
+      users = [ "denial" ];
+      commands = [
+        {
+          command = "ALL";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    swww
-    dunst
-    kitty
-    rofi-wayland
-    brave
-    xdg-desktop-portal-gtk
-    xdg-desktop-portal-hyprland
-    wl-clipboard
-    wlr-randr
-    swaylock-effects
-    font-awesome
-    powerline-fonts
-    fzf
-    ripgrep
-    dnsutils
-    obs-studio
-    obsidian
-    pavucontrol
-    discord
-    vesktop
-    hyprpicker
-    zsh-powerlevel10k
-    zplug
-    git
-    bat
+    # Desktop stuff
+    swww # wallpaper control
+    dunst # notification app
+    kitty # terminal emulator
+    rofi-wayland # app launcher
+    xdg-desktop-portal-gtk # portal
+    xdg-desktop-portal-hyprland # portal
+    wl-clipboard # clipboard functionality
+    wlr-randr # monitor manager
+    swaylock-effects # lock functionality
+    pavucontrol # control audio
+    hyprpicker # colour picker
     (waybar.overrideAttrs (oldAttrs: {
-      mesonFlags = oldAttrs.mesonFlags ++ [ "-Dexperimental=true" ];
-    }))
+                           mesonFlags = oldAttrs.mesonFlags ++ [ "-Dexperimental=true" ];
+                           })) # desktop bar
+    inotify-tools # used for waybar reloading script
+    # CLI Utils
+    fzf # fuzzy finder
+    ripgrep # faster grep
+    dnsutils # dig
+    zsh-powerlevel10k # cli status line
+    zplug # zsh plugin manager
+    git
+    bat # better cat
+    cifs-utils # samba mounting
+    # Apps
+    brave # browser
+    obs-studio # recorder/streaming
+    obsidian # note taking
+    discord # friend chat
+    vesktop # different discord
+    # development
+    neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    font-awesome # nice fonts
+    powerline-fonts # more nice fonts with icons
+    gcc # required for treesitter
+    go # golang
+    pyenv # python environment/version manager
   ];
 
   fonts.packages = with pkgs; [
     (nerdfonts.override { fonts = [ "Meslo" ]; })
   ];
+
+  fileSystems."/mnt/share" = {
+    device = "//home.denial.id.au/denial";
+    fsType = "cifs";
+    options = let
+        automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s,user,users";
+    in ["${automount_opts},credentials=/etc/nixos/smb_secrets,uid=1000,gid=100"];
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -168,7 +197,6 @@
   programs.fzf.keybindings = true;
   programs.fzf.fuzzyCompletion = true;
 
-  sound.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;

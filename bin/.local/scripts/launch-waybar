@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+CONFIG_FILES="$HOME/.config/waybar"
+
+trap "pkill waybar-wrapped" EXIT
+
+while true; do
+    waybar &
+    inotifywait -e create,modify $CONFIG_FILES
+    pkill waybar-wrapped
+done
