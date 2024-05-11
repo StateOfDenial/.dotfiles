@@ -13,6 +13,7 @@
     zsh-powerlevel10k
     bat
     neofetch
+    vimPlugins.codeium-vim
   ];
 
   programs.zsh = {
