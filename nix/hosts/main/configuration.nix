@@ -125,8 +125,7 @@
     brave # browser
     obs-studio # recorder/streaming
     obsidian # note taking
-    discord # friend chat
-    vesktop # different discord
+    discord # friend chat Electrum
     # development
     neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     font-awesome # nice fonts
