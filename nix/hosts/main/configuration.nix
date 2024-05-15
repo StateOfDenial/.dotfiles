@@ -101,8 +101,6 @@
     dunst # notification app
     kitty # terminal emulator
     rofi-wayland # app launcher
-    xdg-desktop-portal-gtk # portal
-    xdg-desktop-portal-hyprland # portal
     wl-clipboard # clipboard functionality
     wlr-randr # monitor manager
     swaylock-effects # lock functionality
@@ -126,6 +124,12 @@
     obs-studio # recorder/streaming
     obsidian # note taking
     discord # friend chat Electrum
+    mangohud # game overlay
+    protonup # proton ge manager
+    lutris
+    wine
+    xivlauncher
+    anki # spaced repetition
     # development
     neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     font-awesome # nice fonts
@@ -160,9 +164,16 @@
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland ];
 
-  programs.steam.enable = true;
-  programs.steam.gamescopeSession.enable = true;
+  programs.steam = {
+    enable = true;
+    package = with pkgs; steam.override { extraPkgs = pkgs: [attr]; };
+  };
+  programs.steam.gamescopeSession.enable = false;
   programs.gamescope.enable = true;
+
+  services.xserver.videoDrivers = ["amdgpu"];
+
+  programs.gamemode.enable = true;
 
   security.pam.services.swaylock = {
     text = ''
