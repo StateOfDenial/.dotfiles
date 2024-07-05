@@ -46,20 +46,30 @@
     fi
     [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
     '';
-    zplug = {
-      enable = true;
-      plugins = [
-        { name = "zsh-users/zsh-completions"; }
-        { name = "zsh-users/zsh-autosuggestions"; }
-        { name = "zsh-users/zsh-syntax-highlighting"; tags = [ defer:2 ]; }
-        { name = "zsh-users/zsh-history-substring-search"; tags = [ defer:3 ]; }
-        { name = "plugins/git"; tags = [ from:oh-my-zsh ]; }
-        { name = "plugins/terraform"; tags = [ from:oh-my-zsh ]; }
-        { name = "plugins/kubectl"; tags = [ from:oh-my-zsh ]; }
-        { name = "romkatv/powerlevel10k"; tags = [ from:github as:theme depth:1 ]; }
-      ];
-    };
   };
+
+/*  stylix = {
+      image = /home/denial/Downloads/greenforest.jpg;
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/everforest.yaml";
+      fonts = {
+        serif = {
+          package = pkgs.dejavu_fonts;
+          name = "DevaVu Serif";
+        };
+        sansSerif = {
+          package = pkgs.dejavu_fonts;
+          name = "DevaVu Sans";
+        };
+        monospace = {
+          package = (pkgs.nerdfonts.override { fonts = [ "Meslo" ]; });
+          name = "Meslo";
+        };
+      };
+
+      targets = {
+        bemenu.enable = false;
+      };
+  };*/
 
   programs.git = {
     enable = true;
@@ -69,7 +79,7 @@
 
   home = {
     file = {
-      #".zshrc".source = ../../../zsh/.zshrc;
+      ".zshrc".source = ../../../zsh/.zshrc;
       ".p10k.zsh".source = ../../../zsh/.p10k.zsh;
       ".tmux.conf".source = ../../../tmux/.tmux.conf;
       ".config/kitty/kitty.conf".source = ../../../kitty/.config/kitty/kitty.conf;

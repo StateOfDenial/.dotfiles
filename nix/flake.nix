@@ -38,9 +38,9 @@
       "denial@main" = home-manager.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.${system};
 
-	modules = [
-	  ./hosts/main/home.nix
-	];
+        modules = [
+          ./hosts/main/home.nix
+        ];
       };
     };
 

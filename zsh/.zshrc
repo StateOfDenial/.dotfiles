@@ -52,39 +52,46 @@ autoload -U +X bashcompinit && bashcompinit
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
-eval "$(goenv init -)"
+if command -v goenv &>/dev/null; then
+  eval "$(goenv init -)"
+fi
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib" 
-export CPPFLAGS="-I$(brew --prefix openssl)/include" 
-export CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)"
-
-export ZPLUG_HOME=$(brew --prefix zplug)
-source $ZPLUG_HOME/init.zsh
-zplug "zsh-users/zsh-completions"
-zplug "zsh-users/zsh-autosuggestions"
-zplug "zsh-users/zsh-syntax-highlighting", defer:2
-zplug "zsh-users/zsh-history-substring-search", defer:3
-zplug "plugins/git", from:oh-my-zsh
-zplug "plugins/terraform", from:oh-my-zsh
-zplug "plugins/kubectl", from:oh-my-zsh
-#zplug "spaceship-prompt/spaceship-prompt", use:spaceship.zsh, from:github, as:theme
-zplug romkatv/powerlevel10k, from:github, as:theme, depth:1
-
-# Install plugins if there are plugins that have not been installed
-if ! zplug check --verbose; then
-    printf "Install? [y/N]: "
-    if read -q; then
-        echo; zplug install
-    fi
+if command -v brew >/dev/null; then
+    export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib" 
+    export CPPFLAGS="-I$(brew --prefix openssl)/include" 
+    export CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)"
 fi
 
-# Then, source plugins and add commands to $PATH
-export ZPLUG_LOG_LOAD_SUCCESS=false
-export ZPLUG_LOG_LOAD_FAILURE=false
-zplug load
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+
+if [ ! -d "$ZINIT_HOME" ]; then
+    mkdir -p "$(dirname $ZINIT_HOME)"
+    git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+
+source "${ZINIT_HOME}/zinit.zsh"
+
+zinit ice depth=1; zinit light romkatv/powerlevel10k
+
+zinit light zsh-users/zsh-syntax-highlighting
+zinit light zsh-users/zsh-autosuggestions
+zinit light zsh-users/zsh-completions
+zinit light Aloxaf/fzf-tab
+
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+zinit snippet OMZP::archlinux
+zinit snippet OMZP::aws
+zinit snippet OMZP::kubectl
+zinit snippet OMZP::kubectx
+zinit snippet OMZP::command-not-found
+
+autoload -Uz compinit && compinit
+
+zinit cdreplay -q
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -98,14 +105,23 @@ if command -v batcat &>/dev/null; then
 fi
 
 if command -v fzf &>/dev/null; then
-    source /usr/share/doc/fzf/examples/key-bindings.zsh
-    source /usr/share/doc/fzf/examples/completion.zsh
-    export FZF_DEFAULT_OPTS='--preview "batcat -n --color always --line-range :50 {}"'
-    export FZF_CTRL_R_OPTS="
-      --preview 'echo {}' --preview-window up:3:hidden:wrap
-      --bind 'ctrl-/:toggle-preview'
-      --bind 'ctrl-y:execute-silent(echo -n {2..} | wl-copy)+abort'"
+    eval "$(fzf --zsh)"
+    #source /usr/share/doc/fzf/examples/key-bindings.zsh
+    #source /usr/share/doc/fzf/examples/completion.zsh
+    #export FZF_DEFAULT_OPTS='--preview "batcat -n --color always --line-range :50 {}"'
+    #export FZF_CTRL_R_OPTS="
+    #  --preview 'echo {}' --preview-window up:3:hidden:wrap
+    #  --bind 'ctrl-/:toggle-preview'
+    #  --bind 'ctrl-y:execute-silent(echo -n {2..} | wl-copy)+abort'"
 fi
+
+bindkey -v
+bindkey '^y' autosuggest-accept
+
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 
 # History settings
 export HISTFILE=~/.history
@@ -116,6 +132,9 @@ setopt INC_APPEND_HISTORY
 setopt SHARE_HISTORY
 
 setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
+setopt hist_ignore_all_dups # ignor dups
+setopt hist_save_no_dups
+setopt hist_find_no_dups
 setopt hist_ignore_dups       # ignore duplicated commands history list
 setopt hist_ignore_space      # ignore commands that start with space
 setopt hist_verify            # show command with history expansion to user before running i
