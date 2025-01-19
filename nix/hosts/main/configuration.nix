@@ -74,7 +74,7 @@
   users.users.denial = {
     isNormalUser = true;
     description = "Denial";
-    extraGroups = [ "networkmanager" "wheel" "audio"];
+    extraGroups = [ "networkmanager" "wheel" "audio" "plugdev"];
     packages = with pkgs; [];
   };
 
@@ -90,6 +90,7 @@
     }
   ];
 
+  hardware.keyboard.zsa.enable = true;
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
@@ -110,6 +111,11 @@
                            mesonFlags = oldAttrs.mesonFlags ++ [ "-Dexperimental=true" ];
                            })) # desktop bar
     inotify-tools # used for waybar reloading script
+    xfce.thunar
+    hyprshot # screen shot tool
+    hyprcursor # cursor themeing
+    hyprlock # lock screen 2
+    hypridle # idle manager
     # CLI Utils
     fzf # fuzzy finder
     ripgrep # faster grep
@@ -119,32 +125,74 @@
     git
     bat # better cat
     cifs-utils # samba mounting
+    unzip
+    charm-freeze
+    stow
     # Apps
     brave # browser
     obs-studio # recorder/streaming
     obsidian # note taking
     discord # friend chat Electrum
+    vesktop # Alt Discord
     mangohud # game overlay
     protonup # proton ge manager
-    lutris
-    wine
-    xivlauncher
+    lutris # games
+        (lutris.override {
+            extraPkgs = pkgs: [
+                wineWowPackages.waylandFull
+                gamescope
+                winetricks
+            ];
+            extraLibraries = pkgs: [
+                gamescope
+            ];
+        })
+    wine # games
+    xivlauncher # Final Fantasy XIV
     anki # spaced repetition
+    protonmail-desktop
+    shotcut
+    libreoffice-qt
+    hunspell
+    hunspellDicts.en_AU
+    # usb stuff
+    usbutils
+    udiskie
+    udisks
     # development
     neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+        # (neovim.override {
+        #     extraPkgs = pkgs: [
+        #         lua54Packages.luarocks
+        #     ];
+        # })
+    lua51Packages.luarocks
     font-awesome # nice fonts
     powerline-fonts # more nice fonts with icons
     gcc # required for treesitter
     go # golang
     pyenv # python environment/version manager
+    python39
+    google-cloud-sdk # gcloud
+    gnumake # makefile
+    gnupg # gpg
+    ansible # for automating current iteration home-server
   ];
 
   fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "Meslo" ]; })
+    pkgs.nerd-fonts.meslo-lg
   ];
 
   fileSystems."/mnt/share" = {
     device = "//home.denial.id.au/denial";
+    fsType = "cifs";
+    options = let
+        automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s,user,users";
+    in ["${automount_opts},credentials=/etc/nixos/smb_secrets,uid=1000,gid=100"];
+  };
+
+  fileSystems."/mnt/everyone" = {
+    device = "//home.denial.id.au/Shared Folder";
     fsType = "cifs";
     options = let
         automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s,user,users";
@@ -161,8 +209,14 @@
   programs.hyprland.enable = true;
   programs.hyprland.xwayland.enable = true;
 
-  xdg.portal.enable = true;
-  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland ];
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gnome
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-hyprland
+    ];
+  };
 
   programs.steam = {
     enable = true;
@@ -206,6 +260,10 @@
   };
   programs.fzf.keybindings = true;
   programs.fzf.fuzzyCompletion = true;
+
+  services.devmon.enable = true;
+  services.gvfs.enable = true;
+  services.udisks2.enable = true;
 
   security.rtkit.enable = true;
   services.pipewire = {

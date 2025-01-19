@@ -77,32 +77,34 @@
     userEmail = "daniel.brown715@gmail.com";
   };
 
-  home = {
-    file = {
-      ".zshrc".source = ../../../zsh/.zshrc;
-      ".p10k.zsh".source = ../../../zsh/.p10k.zsh;
-      ".tmux.conf".source = ../../../tmux/.tmux.conf;
-      ".config/kitty/kitty.conf".source = ../../../kitty/.config/kitty/kitty.conf;
-      ".config/hypr/hyprland.conf".source = ../../../hypr/.config/hypr/hyprland.conf;
-      ".config/nvim" = {
-        source = ../../../nvim/.config/nvim;
-        recursive = true;
-      };
-      ".config/waybar" = {
-        source = ../../../waybar/.config/waybar;
-        recursive = true;
-      };
-      ".local/scripts" = {
-        source = ../../../bin/.local/scripts;
-        recursive = true;
-      };
-    };
-  };
+  # home = {
+  #   file = {
+  #     ".zshrc".source = ../../../zsh/.zshrc;
+  #     ".p10k.zsh".source = ../../../zsh/.p10k.zsh;
+  #     ".tmux.conf".source = ../../../tmux/.tmux.conf;
+  #     ".config/kitty/kitty.conf".source = ../../../kitty/.config/kitty/kitty.conf;
+  #     ".config/hypr/hyprland.conf".source = ../../../hypr/.config/hypr/hyprland.conf;
+  #     ".config/hypr/hyprlock.conf".source = ../../../hypr/.config/hypr/hyprlock.conf;
+  #     ".config/ghostty/config".source = ../../../ghostty/.config/ghostty/config;
+  #     ".config/nvim" = {
+  #       source = ../../../nvim/.config/nvim;
+  #       recursive = true;
+  #     };
+  #     ".config/waybar" = {
+  #       source = ../../../waybar/.config/waybar;
+  #       recursive = true;
+  #     };
+  #     ".local/scripts" = {
+  #       source = ../../../bin/.local/scripts;
+  #       recursive = true;
+  #     };
+  #   };
+  # };
 
 
   home.stateVersion = "23.11";
 
-  programs.home-manager.enable = true;
+  # programs.home-manager.enable = true;
 
   services.gpg-agent = {
     enable = true;
