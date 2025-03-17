@@ -1,4 +1,4 @@
-return {
-    -- "echasnovksi/mini.icons",
-    -- version = False
+return { 
+    'echasnovski/mini.icons', 
+    version = false 
 }

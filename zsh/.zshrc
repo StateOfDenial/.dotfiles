@@ -46,6 +46,7 @@ alias la='ls -la --color=always'
 export PATH="$HOME/.local/scripts:$PATH"
 export PATH="$HOME/.local/kitty.app/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.npm-global/lib:$PATH"
 
 autoload -U +X bashcompinit && bashcompinit
 

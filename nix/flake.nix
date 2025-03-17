@@ -6,12 +6,14 @@
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.11";
     home-manager.url = "github:nix-community/home-manager/release-24.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     aagl.url = "github:ezKEa/aagl-gtk-on-nix";
     aagl.inputs.nixpkgs.follows = "nixpkgs";
     ghostty.url = "github:ghostty-org/ghostty";
+    umu.url = "github:Open-Wine-Components/umu-launcher?dir=packaging/nix";
   };
 
-  outputs = { nixpkgs, home-manager, aagl, ghostty, ... } @ inputs: let
+  outputs = { self, nixpkgs, home-manager, aagl, ghostty, chaotic, ... } @ inputs: let
     customLib = import ./lib/default.nix {inherit inputs;};
     system = "x86_64-linux";
   in
@@ -20,8 +22,10 @@
     nixosConfigurations = {
       main = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        specialArgs = { inherit self inputs; };
         modules = [
           ./hosts/main/configuration.nix
+          chaotic.nixosModules.default
           {
             imports = [ aagl.nixosModules.default ];
             nix.settings = aagl.nixConfig;

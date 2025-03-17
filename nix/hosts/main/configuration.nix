@@ -2,13 +2,32 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
-
+{ inputs, pkgs, ... }:
+let
+  inherit (pkgs.sdenv.hostPlatform) system;
+  umu = inputs.umu.packages.${system}.umu.override {
+    version = inputs.umu.shortRev;
+    truststore = true;
+    ebor2 = true;
+  };
+in
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.powerOnBoot = true;
+
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  # uses nyx chaotic to give me latest mesa-git
+  chaotic.mesa-git.enable = true;
+
+  # system.replaceRuntimeDependencies = [
+  #       ({ original = pkgs.mesa; replacement = (import /srv/nixpkgs-mesa { }).pkgs.mesa; })
+  #       ({ original = pkgs.mesa.drivers; replacement = (import /srv/nixpkgs-mesa { }).pkgs.mesa.drivers; })
+  # ];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -64,6 +83,8 @@
     };
   };
 
+  services.blueman.enable = true;
+
   location = {
     provider = "manual";
     longitude = 115.8617;
@@ -116,6 +137,7 @@
     hyprcursor # cursor themeing
     hyprlock # lock screen 2
     hypridle # idle manager
+    bluez # bluetooth
     # CLI Utils
     fzf # fuzzy finder
     ripgrep # faster grep
@@ -172,7 +194,9 @@
     gcc # required for treesitter
     go # golang
     pyenv # python environment/version manager
+    tenv
     python39
+    nodejs_23
     google-cloud-sdk # gcloud
     gnumake # makefile
     gnupg # gpg
@@ -208,6 +232,26 @@
   # };
   programs.hyprland.enable = true;
   programs.hyprland.xwayland.enable = true;
+
+  programs.corectrl = {
+    enable = true;
+    gpuOverclock = {
+      enable = true;
+      ppfeaturemask = "0xffffffff";
+    };
+  };
+
+  security.polkit.extraConfig = ''
+    polkit.addRule(function (action, subject) {
+      if ((action.id == "org.corectrl.helper.init" ||
+          action.id == "org.corectrl.helperkiller.init") &&
+          subject.local == true &&
+          subject.active == true &&
+          subject.isInGroup("users")) {
+        return polkit.Result.YES;
+      }
+    });
+  '';
 
   xdg.portal = {
     enable = true;
@@ -272,6 +316,14 @@
     alsa.support32Bit = true;
     pulse.enable = true;
     jack.enable = true;
+    wireplumber.extraConfig.bluetoothEnhancements = {
+        "monitor.bluez.properties" = {
+      "bluez5.enable-sbc-xq" = true;
+      "bluez5.enable-msbc" = true;
+      "bluez5.enable-hw-volume" = true;
+      "bluez5.roles" = [ "hsp_hs" "hsp_ag" "hfp_hf" "hfp_ag" ];
+  };
+        };
   };
   # List services that you want to enable:
 
