@@ -4,16 +4,15 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.11";
-    home-manager.url = "github:nix-community/home-manager/release-24.11";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
-    aagl.url = "github:ezKEa/aagl-gtk-on-nix";
-    aagl.inputs.nixpkgs.follows = "nixpkgs";
-    ghostty.url = "github:ghostty-org/ghostty";
     umu.url = "github:Open-Wine-Components/umu-launcher?dir=packaging/nix";
+    # OpenLinkHub = {
+    #   url = "path:./packages/OpenLinkHub/default.nix";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
 
-  outputs = { self, nixpkgs, home-manager, aagl, ghostty, chaotic, ... } @ inputs: let
+  outputs = { self, nixpkgs, chaotic, ... } @ inputs: let
     customLib = import ./lib/default.nix {inherit inputs;};
     system = "x86_64-linux";
   in
@@ -26,27 +25,7 @@
         modules = [
           ./hosts/main/configuration.nix
           chaotic.nixosModules.default
-          {
-            imports = [ aagl.nixosModules.default ];
-            nix.settings = aagl.nixConfig;
-            programs.anime-game-launcher.enable = true; # Adds launcher and /etc/hosts rules
-            programs.anime-games-launcher.enable = true;
-            programs.honkers-railway-launcher.enable = true;
-            programs.honkers-launcher.enable = true;
-            environment.systemPackages = [
-                ghostty.packages.x86_64-linux.default
-            ];
-          }
-        ];
-      };
-    };
-
-    homeConfigurations = {
-      "denial@main" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.${system};
-
-        modules = [
-          ./hosts/main/home.nix
+          ./modules/nixos/OpenLinkHub/default.nix
         ];
       };
     };

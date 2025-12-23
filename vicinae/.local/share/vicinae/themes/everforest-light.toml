@@ -1,0 +1,19 @@
+[meta]
+version = 1
+name = "Everforest Medium Light"
+description = "Easy on the eyes forest theme."
+variant = "light"
+
+[colors.core]
+background = "#EFEBD4"
+foreground = "#5C6A72"
+
+[colors.accents]
+blue = "#3A94C5"
+green = "#8DA101"
+magenta = "#DF69BA"
+orange = "#F57D26"
+purple = "#DF69BA"
+red = "#F85552"
+yellow = "#DFA000"
+cyan = "#35A77C"

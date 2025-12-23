@@ -19,10 +19,14 @@ in
   hardware.bluetooth.enable = true;
   hardware.bluetooth.powerOnBoot = true;
 
+  zramSwap.enable = true;
+
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # uses nyx chaotic to give me latest mesa-git
   chaotic.mesa-git.enable = true;
+
+  hardware.amdgpu.initrd.enable = true;
 
   # system.replaceRuntimeDependencies = [
   #       ({ original = pkgs.mesa; replacement = (import /srv/nixpkgs-mesa { }).pkgs.mesa; })
@@ -36,6 +40,7 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = "main"; # Define your hostname.
+  environment.etc.hosts.mode = "0644"; # enable live editing of /etc/hosts
 # reless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -84,6 +89,7 @@ in
   };
 
   services.blueman.enable = true;
+  services.mullvad-vpn.enable = true;
 
   location = {
     provider = "manual";
@@ -122,7 +128,7 @@ in
     swww # wallpaper control
     dunst # notification app
     kitty # terminal emulator
-    rofi-wayland # app launcher
+    rofi # app launcher
     wl-clipboard # clipboard functionality
     wlr-randr # monitor manager
     swaylock-effects # lock functionality
@@ -138,6 +144,10 @@ in
     hyprlock # lock screen 2
     hypridle # idle manager
     bluez # bluetooth
+    glib
+    (vicinae.overrideAttrs ( oldAttrs: {
+                            useLayerShell = false;
+                            }))
     # CLI Utils
     fzf # fuzzy finder
     ripgrep # faster grep
@@ -152,12 +162,13 @@ in
     stow
     # Apps
     brave # browser
+    firefox
     obs-studio # recorder/streaming
     obsidian # note taking
     discord # friend chat Electrum
-    vesktop # Alt Discord
+    vesktop # discord but cooler?
     mangohud # game overlay
-    protonup # proton ge manager
+    protonup-ng # proton ge manager
     lutris # games
         (lutris.override {
             extraPkgs = pkgs: [
@@ -170,18 +181,19 @@ in
             ];
         })
     wine # games
-    xivlauncher # Final Fantasy XIV
     anki # spaced repetition
     protonmail-desktop
     shotcut
     libreoffice-qt
     hunspell
     hunspellDicts.en_AU
+    heroic
     # usb stuff
     usbutils
     udiskie
     udisks
     # development
+    ghostty
     neovim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
         # (neovim.override {
         #     extraPkgs = pkgs: [
@@ -195,13 +207,24 @@ in
     go # golang
     pyenv # python environment/version manager
     tenv
-    python39
-    nodejs_23
+    python314
+    nodejs_24
     google-cloud-sdk # gcloud
     gnumake # makefile
     gnupg # gpg
     ansible # for automating current iteration home-server
+    jq
+    kubectl
+    bootdev-cli
+    minikube
   ];
+
+  virtualisation.podman = {
+    enable = true;
+  };
+
+  # try out waydroid
+  virtualisation.waydroid.enable = true;
 
   fonts.packages = with pkgs; [
     pkgs.nerd-fonts.meslo-lg

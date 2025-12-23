@@ -1,4 +1,3 @@
-. "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -47,6 +46,8 @@ export PATH="$HOME/.local/scripts:$PATH"
 export PATH="$HOME/.local/kitty.app/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.npm-global/lib:$PATH"
+
+export EDITOR="nvim"
 
 autoload -U +X bashcompinit && bashcompinit
 

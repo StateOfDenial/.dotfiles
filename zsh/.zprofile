@@ -4,7 +4,7 @@ os=$(uname)
 
 if [ "$os" = "Darwin" ]; then
     eval "$(brew shellenv)"
-else
+elif [ ! -f /etc/NIXOS ]; then
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
     
