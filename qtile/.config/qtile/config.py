@@ -30,7 +30,10 @@ import subprocess
 from libqtile import bar, layout, widget, hook
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
+from libqtile.utils import send_notification
+from libqtile.log_utils import logger
 from qtile_extras.widget.decorations import RectDecoration
+from libqtile import qtile
 
 mod = "mod4"
 terminal = "kitty"
@@ -39,14 +42,16 @@ keys = [
     # A list of available commands that can be bound to keys can be found
     # at https://docs.qtile.org/en/latest/manual/config/lazy.html
     # Switch between windows
-    Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
-    Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
-    Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
-    Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
+    Key(["mod1"], "h", lazy.layout.left(), desc="Move focus to left"),
+    Key(["mod1"], "l", lazy.layout.right(), desc="Move focus to right"),
+    Key(["mod1"], "j", lazy.layout.down(), desc="Move focus down"),
+    Key(["mod1"], "k", lazy.layout.up(), desc="Move focus up"),
     # Move windows between left/right columns or move up/down in current stack.
     # Moving out of range in Columns layout will create new column.
     Key([mod, "shift"], "h", lazy.layout.shuffle_left(),
         desc="Move window to the left"),
+    Key([mod, "shift"], "l", lazy.layout.shuffle_right(),
+        desc="Move window to the right"),
     Key([mod, "shift"], "j", lazy.layout.shuffle_down(), desc="Move window down"),
     Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
     # Grow windows. If current window is on the edge of screen and direction
@@ -95,7 +100,7 @@ keys = [
     Key([mod, "control"], "d", lazy.spawn("discord")),
     Key([mod, "shift"], "s", lazy.spawn("flameshot gui")),
     # Lock keybind, without or with `xautolock`
-    Key([mod, "shift"], "l", lazy.spawn("xautolock -locknow")),
+    Key([mod], "l", lazy.spawn("xautolock -locknow")),
     Key([mod, "mod1", "shift"], "l", lazy.spawn(
         "/home/danielbrown/.local/scripts/lp-sleep-toggle disable", shell=True)),
     Key([mod, "control", "shift"], "l", lazy.spawn(
@@ -301,12 +306,12 @@ def init_widgets_list():
 
 def init_widgets_screen1():
     widgets_screen1 = init_widgets_list()
-    # del widgets_screen1[9:10]               # Slicing removes unwanted widgets (systray) on Monitors 1,3
     return widgets_screen1
 
 
 def init_widgets_screen2():
     widgets_screen2 = init_widgets_list()
+    # Slicing removes unwanted widgets on secondary screen
     del widgets_screen2[8:9]
     return widgets_screen2
 
@@ -366,7 +371,18 @@ reconfigure_screens = True
 auto_minimize = False
 
 
-@ hook.subscribe.startup_once
+# Set group layout to max if on a screen smaller than a certain width
+# usually my current laptop screen size
+@hook.subscribe.setgroup
+def layout_change():
+    for screen in qtile.screens:
+        if screen.width <= 1920:
+            screen.group.setlayout("max")
+        else:
+            screen.group.setlayout("monadtall")
+
+
+@hook.subscribe.startup_once
 def start_once():
     home = os.path.expanduser("~")
     subprocess.call([home + "/.config/qtile/autostart.sh"])
