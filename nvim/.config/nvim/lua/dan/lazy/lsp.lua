@@ -31,7 +31,6 @@ return {
             },
             handlers = {
                 function(server_name) -- default handler (optional)
-
                     require("lspconfig")[server_name].setup {
                         capabilities = capabilities
                     }
@@ -43,12 +42,21 @@ return {
                         capabilities = capabilities,
                         settings = {
                             Lua = {
-				    runtime = { version = "Lua 5.1" },
+                                runtime = { version = "Lua 5.1" },
                                 diagnostics = {
                                     globals = { "vim", "it", "describe", "before_each", "after_each" },
                                 }
                             }
                         }
+                    }
+                end,
+
+                ["terraform-ls"] = function()
+                    local lspconfig = require("lspconfig")
+                    lspconfig.terraformls.setup {
+                        cmd = { 'terraform-ls', 'serve', '-log-file', vim.fs.dirname(require('vim.lsp.log').get_filename()) .. "/terraform-ls.log" },
+                        filetypes = { 'terraform', 'terraform-vars' },
+                        root_markers = { '.terraform', '.git' },
                     }
                 end,
             }
@@ -63,13 +71,13 @@ return {
                 end,
             },
             mapping = cmp.mapping.preset.insert({
-              ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-              ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-              ['<C-y>'] = cmp.mapping.confirm(cmp_select),
-              ['<C-e>'] = cmp.mapping.abort(),
-              ['<C-Space>'] = cmp.mapping.complete(),
-              ['<CR>'] = cmp.config.disable,
-              ['<Tab>'] = cmp.config.disable
+                ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
+                ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
+                ['<C-y>'] = cmp.mapping.confirm(cmp_select),
+                ['<C-e>'] = cmp.mapping.abort(),
+                ['<C-Space>'] = cmp.mapping.complete(),
+                ['<CR>'] = cmp.config.disable,
+                ['<Tab>'] = cmp.config.disable
             }),
             sources = cmp.config.sources({
                 { name = 'nvim_lsp' },

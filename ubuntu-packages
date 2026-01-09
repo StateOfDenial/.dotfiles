@@ -17,7 +17,6 @@ picom
 xserver-xorg
 xinit
 libpangocairo-1.0-0
-brave-browser
 wofi
 rofi
 python3

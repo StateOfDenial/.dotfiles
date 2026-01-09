@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+
+_kube_tunnel() {
+  local project=$1
+  local zone=$2
+  local cluster_name=$3
+  local port=$4
+  local region="${zone%??}"
+
+  echo "Connecting to ${cluster_name} via port ${port}..."
+
+  gcloud container clusters get-credentials --project "${project}" --zone "${region}" --internal-ip "${cluster_name}"
+
+  local context_name="gke_${project}_${region}_${cluster_name}"
+  kubectl config set-cluster "${context_name}" --server="https://localhost:${port}" --insecure-skip-tls-verify=true
+
+  # In zsh, we ensure these variables are local to the function
+  local instance=$(gcloud compute instances list --zones "${zone}" --filter="name:jumpbox" --format="value(name)" --project "${project}")
+  local cluster_ip=$(gcloud container clusters list --filter="name:${cluster_name}" --format="value(MASTER_IP)" --project "${project}")
+
+  if [[ -z "$instance" || -z "$cluster_ip" ]]; then
+    echo "Error: Could not resolve jumpbox or master IP for ${cluster_name}"
+    return 1
+  fi
+
+  gcloud compute ssh \
+    --tunnel-through-iap "${instance}" \
+    --zone "${zone}" \
+    --ssh-flag="-ServerAliveInterval=30" \
+    --project "${project}" -- -N -L "${port}:${cluster_ip}:443"
+
+
+  kubectl config unset current-context 2>/dev/null || true
+}
+
+CLUSTERS=(
+  "edu-prd-auea1|fzo-prd-edu|australia-southeast1-a|cluster-syd"
+  "edu-prd-usce1|fzo-prd-edu|us-central1-a|cluster-us-central1"
+  "edu-prd-uswe2|fzo-prd-edu|us-west2-a|cluster-lax"
+  "edu-prd-euwe2|fzo-prd-edu-uk|europe-west2-a|cluster-europe-west2"
+  "edu-sit-auea1|fzo-sit-edu|australia-southeast1-a|cluster-syd"
+  "edu-stg-uswe2|fzo-stg-edu|us-west2-a|cluster-lax"
+  "edu-sit-classroom-ause1|fzo-sit-classroom|australia-southeast1-a|sit-classroom-ause1-gke"
+  "edu-stg-classroom-uswe2|fzo-stg-classroom|us-west2-b|stg-classroom-uswe2-gke"
+  "edu-prd-classroom-usce1|fzo-prd-classroom-usce1|us-central1-a|prd-classroom-usce1-gke"
+  "data-sit-auea1|fzo-sit-edu-data-au|australia-southeast1-a|sit-data-ause1-gke"
+  "data-stg-uswe2|fzo-stg-edu-data-us|us-west2-a|stg-data-uswe2-gke"
+  "data-prd-ause1|fzo-prd-edu-data-au|australia-southeast1-a|prd-data-ause1-gke"
+  "data-prd-euwe2|fzo-prd-edu-data-uk|europe-west2-a|prd-data-euwe2-gke"
+  "data-prd-usce1|fzo-prd-edu-data-us|us-central1-a|prd-data-usce1-gke"
+  "con-prd-core-auea1|fzo-prd|australia-southeast1-a|fzo-prd-core-australia-southeast1-gke"
+  "con-prd-filter-euwe2|fzo-prd|europe-west2-a|fzo-prd-filter-europe-west2-gke"
+  "con-prd-filter-uswe2|fzo-prd|us-west2-a|fzo-prd-filter-us-west2-gke"
+  "con-prd-tools-auea1|fzo-prd|australia-southeast1-a|fzo-prd-tools-australia-southeast1-gke"
+  "con-prd-verdict-auea1|fzo-prd|australia-southeast1-a|fzo-prd-verdict-australia-southeast1-gke"
+  "con-prd-verdict-usea1|fzo-prd|us-east1-b|fzo-prd-verdict-us-east1-gke"
+  "con-prd-verdict-uss1|fzo-prd|us-south1-b|fzo-prd-verdict-us-south1-gke"
+  "con-stg-core-auea1|fzo-stg|australia-southeast1-a|fzo-stg-core-australia-southeast1-gke"
+  "con-stg-filter-auea1|fzo-stg|australia-southeast1-a|fzo-stg-filter-australia-southeast1-gke"
+  "con-stg-tools-auea1|fzo-stg|australia-southeast1-a|fzo-stg-tools-australia-southeast1-gke"
+  "con-sit-core-auea1|fzo-sit|australia-southeast1-a|fzo-sit-core-australia-southeast1-gke"
+  "con-sit-filter-auea1|fzo-sit|australia-southeast1-a|fzo-sit-filter-australia-southeast1-gke"
+  "con-sit-tools-auea1|fzo-sit|australia-southeast1-a|fzo-sit-tools-australia-southeast1-gke"
+  "osh-sit-ause1|fzo-sit-osh|australia-southeast1-a|sit-osh-ause1-gke"
+  "osh-stg-uswe2|fzo-stg-osh|us-west2-a|stg-osh-uswe2-gke"
+  "osh-prd-usce1|fzo-prd-osh|us-central1-a|prd-osh-usce1-gke"
+  "osh-prd-ause1|fzo-prd-osh|australia-southeast1-a|prd-osh-ause1-gke"
+  "osh-prd-euwe2|fzo-prd-osh|europe-west2-a|prd-osh-euwe2-gke"
+  "dlc-stg-uswe2|fzo-stg-dlc-us|us-west2-a|stg-dlc-uswe2-gke"
+  "dev-platform-usce1|fzo-platform-dev-observability|us-central1-a|dev-platform-usce1-gke"
+  "sit-monitor-usce1-ap|fzo-sit-monitor-us|us-central1-a|fzo-sit-monitor-usce1-gke-autopilot"
+  "stg-monitor-euwe2-ap|fzo-stg-monitor-uk|europe-west2-a|stg-monitor-euwe2-gke-autopilot"
+)
+
+if ! command -v fzf >/dev/null 2>&1; then
+  echo "Need to have fzf installed. https://github.com/junegunn/fzf"
+  exit 1
+fi
+
+if ! command -v kubectl >/dev/null 2>&1; then
+  echo "Need to have kubectl installed"
+  exit 1
+fi
+
+if ! command -v gcloud >/dev/null 2>&1; then
+  echo "Need to have gcloud installed"
+  exit 1
+fi
+
+cluster=$(printf '%s\n' "${CLUSTERS[@]}" | fzf)
+
+IFS='|' read -r -a parts <<< "$cluster"
+suffix="${parts[0]}"
+project="${parts[1]}"
+zone="${parts[2]}"
+name="${parts[3]}"
+
+# Get a deterministic "random" port number
+# enables running multiple tunnels at once
+max_port=65000
+min_port=2000
+HASH_HEX=$(echo -n "$suffix" | md5sum | cut -d ' ' -f 1)
+DETERMINISTIC_NUMBER=$(( 0x$(echo "$HASH_HEX" | cut -c 1-8) ))
+local_port=$((DETERMINISTIC_NUMBER % (max_port - min_port + 1) +min_port))
+
+_kube_tunnel "$project" "$zone" "$name" "$local_port"

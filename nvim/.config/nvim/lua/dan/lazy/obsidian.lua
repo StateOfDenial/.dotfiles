@@ -1,23 +1,24 @@
-return {
-    "epwalsh/obsidian.nvim",
-    version = "*",
-    lazy = true,
-    ft = "markdown",
-    ui = {
-        enable = false
-    },
-    dependencies = {
-        "nvim-lua/plenary.nvim",
-        "hrsh7th/nvim-cmp",
-        "nvim-telescope/telescope.nvim",
-        "nvim-treesitter/nvim-treesitter",
-    },
-    opts = {
-        workspaces = {
-            {
-                name = "test",
-                path = "~/personal/test/test",
-            }
-        }
-    },
-}
+-- return {
+--     "epwalsh/obsidian.nvim",
+--     version = "*",
+--     lazy = true,
+--     ft = "markdown",
+--     ui = {
+--         enable = false
+--     },
+--     dependencies = {
+--         "nvim-lua/plenary.nvim",
+--         "hrsh7th/nvim-cmp",
+--         "nvim-telescope/telescope.nvim",
+--         "nvim-treesitter/nvim-treesitter",
+--     },
+--     opts = {
+--         workspaces = {
+--             {
+--                 name = "test",
+--                 path = "~/personal/test/test",
+--             }
+--         }
+--     },
+-- }
+return {}

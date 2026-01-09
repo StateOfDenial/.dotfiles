@@ -26,14 +26,11 @@
 
 from libqtile.dgroups import simple_key_binder
 import os
-import re
-import socket
 import subprocess
-from libqtile import qtile
 from libqtile import bar, layout, widget, hook
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
-from qtile_extras import widget as extra_widgets
+from qtile_extras.widget.decorations import RectDecoration
 
 mod = "mod4"
 terminal = "kitty"
@@ -46,14 +43,10 @@ keys = [
     Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
     Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
     Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
-    Key([mod], "space", lazy.layout.next(),
-        desc="Move window focus to other window"),
     # Move windows between left/right columns or move up/down in current stack.
     # Moving out of range in Columns layout will create new column.
     Key([mod, "shift"], "h", lazy.layout.shuffle_left(),
         desc="Move window to the left"),
-    Key([mod, "shift"], "l", lazy.layout.shuffle_right(),
-        desc="Move window to the right"),
     Key([mod, "shift"], "j", lazy.layout.shuffle_down(), desc="Move window down"),
     Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
     # Grow windows. If current window is on the edge of screen and direction
@@ -74,6 +67,8 @@ keys = [
     Key([mod, "mod1"], "n", lazy.layout.normalize(),
         desc="MonadTall normalize window"),
     Key([mod], "n", lazy.next_screen(), desc="Focus next monitor"),
+    Key([mod], "f", lazy.window.toggle_fullscreen()),
+    Key([mod], "t", lazy.window.toggle_floating()),
     # Toggle between split and unsplit sides of stack.
     # Split = all windows displayed
     # Unsplit = 1 window displayed, like Max layout, but still with
@@ -90,33 +85,46 @@ keys = [
     Key([mod], "w", lazy.window.kill(), desc="Kill focused window"),
     Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
-    # Key([mod], "r", lazy.spawn(), desc="Spawn a command using a prompt widget"),
-    # Key([mod], "r", lazy.spawn("wofi --show drun,run"), desc="Spawn a command using a prompt widget"),
-    Key([mod], "r", lazy.spawn("rofi -show combi -combi-modi \"window,drun,ssh,run\" -modes combi"),
+    Key([mod], "space", lazy.spawn("vicinae toggle"),
         desc="Spawn a command using a prompt widget"),
-    Key([mod, "shift"], "r",
-        lazy.restart(),
-        desc='Restart Qtile'
-        ),
+    Key([mod, "shift"], "r", lazy.restart(), desc='Restart Qtile'),
     Key([mod], "b", lazy.hide_show_bar(), desc="Toggle showing the bar"),
     # Quick launch common apps
-    Key([mod, "control"], "b", lazy.spawn("brave-browser")),
+    Key([mod, "control"], "b", lazy.spawn("xdg-open")),
     Key([mod, "control"], "s", lazy.spawn("steam")),
     Key([mod, "control"], "d", lazy.spawn("discord")),
+    Key([mod, "shift"], "s", lazy.spawn("flameshot gui")),
+    # Lock keybind, without or with `xautolock`
+    Key([mod, "shift"], "l", lazy.spawn("xautolock -locknow")),
+    Key([mod, "mod1", "shift"], "l", lazy.spawn(
+        "/home/danielbrown/.local/scripts/lp-sleep-toggle disable", shell=True)),
+    Key([mod, "control", "shift"], "l", lazy.spawn(
+        "/home/danielbrown/.local/scripts/lp-sleep-toggle enable", shell=True)),
+    # Keybinds for things like monitor brightness and media playback controls
+    Key([], "XF86AudioLowerVolume", lazy.spawn("amixer sset Master 2%-")),
+    Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer sset Master 2%+")),
+    Key([], "XF86AudioMute", lazy.spawn("amixer sset Master 1+ toggle")),
+    Key([], "XF86AudioPlay", lazy.spawn("playerctl play-pause")),
+    Key([], "XF86AudioStop", lazy.spawn("playerctl stop")),
+    Key([], "XF86AudioNext", lazy.spawn("playerctl next")),
+    Key([], "XF86AudioPrev", lazy.spawn("playerctl previous")),
+    # Key([], "XF86MonBrightnessUp"
+    #     lazy.widget['backlight'].change_backlight(
+    #         backlight.ChangeDirection.UP)
+    #     ),
+    # Key([], "XF86MonBrightnessDown",
+    #     lazy.widget['backlight'].change_backlight(
+    #         backlight.ChangeDirection.DOWN)
+    #     )
 ]
 
-# groups = [Group(i) for i in "123456789"]
 
 groups = [Group("DEV", layout="monadtall"),
-          Group("WWW", layout="monadtall",
-                matches=[Match(re.compile(r"^(brave-browser)$"))]),
-          Group("CHAT", layout="monadtall", spawn="discord",
-                matches=[Match(wm_class="Discord")]),
-          Group("GAME", layout="max", spawn="steam",
-                matches=[Match(wm_class="Steam")]),
+          Group("WWW", layout="monadtall"),
+          Group("MUS", layout="monadtall"),
+          Group("PRES", layout="max"),
           Group("SYS", layout="monadtall"),
-          Group("DOC", layout="monadtall"),
-          Group("MUS", layout="monadtall")]
+          Group("DOC", layout="monadtall")]
 
 # Allow MODKEY+[0 through 9] to bind to groups, see
 # https://docs.qtile.org/en/stable/manual/config/groups.html
@@ -145,55 +153,79 @@ layouts = [
     # layout.Tile(),
     # layout.TreeTab(),
     # layout.VerticalTile(),
-    # layout.Zoomy(),
+    layout.Zoomy(**layout_theme),
 ]
 
 
-colours = [["#2E383C", "#2E383C"],
-           ["#282828", "#282828"],
-           ["#D3C6AA", "#D3C6AA"],
-           ["#83C092", "#83C092"],
-           ["#A7C080", "#A7C080"],
-           ["#DBBC7F", "#DBBC7F"],
-           ["#7FBBB3", "#7FBBB3"],
-           ["#D699B6", "#D699B6"],
-           ["#E69875", "#E69875"],
-           ["#E67E80", "#E67E80"]]
+colours = [["#2E383C", "#2E383C"],  # BG
+           ["#282828", "#282828"],  # More black?
+           ["#D3C6AA", "#D3C6AA"],  # FG
+           ["#83C092", "#83C092"],  # Aqua
+           ["#A7C080", "#A7C080"],  # Green
+           ["#DBBC7F", "#DBBC7F"],  # Yellow
+           ["#7FBBB3", "#7FBBB3"],  # Blue
+           ["#D699B6", "#D699B6"],  # Purple
+           ["#E69875", "#E69875"],  # Red
+           ["#E67E80", "#E67E80"]]  # Status line 3
 colour_trans_black = ["#00000000", "#00000000", "#00000000"]
-
-prompt = "{0}@{1}: ".format(os.environ["USER"], socket.gethostname())
 
 widget_defaults = dict(
     font="sans",
-    fontsize=12,
-    padding=3,
+    fontsize=16,
+    padding=7,
     background=colours[0]
 )
 extension_defaults = widget_defaults.copy()
 
 
 def init_widgets_list():
+    decoration_group = {
+        "decorations": [
+            RectDecoration(
+                radius=15,
+                group=True,
+                filled=True,
+            )
+        ]
+    }
     widgets_list = [
         widget.Sep(
             linewidth=0,
             padding=6,
             foreground=colours[2],
-            background=colours[0]
+            background=colours[0],
+            **decoration_group
         ),
         widget.OpenWeather(
             app_key="bdd7a522ba396eefafcc7934577d3fd8",
             background=colours[0],
-            location="perth,AU"
+            location="perth,AU",
+            foreground=colours[2],
+            decoration=[
+                RectDecoration(radius=111, filled=True)
+            ]
+        ),
+        widget.Sep(
+            linewidth=0,
+            padding=6,
+            foreground=colours[2],
+            background=colours[0],
+            **decoration_group
+        ),
+        widget.DoNotDisturb(
+            background=colours[0],
+            foreground=colours[2],
         ),
         widget.Spacer(
             background=colour_trans_black,
             length=bar.STRETCH),
-        widget.CurrentLayoutIcon(foreground=colours[2],
-                                 background=colours[0],
-                                 padding=5),
+        widget.CurrentLayout(foreground=colours[2],
+                             background=colours[0],
+                             padding=5,
+                             **decoration_group),
         widget.GroupBox(
-            fontsize=9,
-            margin_y=3,
+            fontsize=13,
+            margin_y=5,
             margin_x=0,
             padding_y=5,
             padding_x=3,
@@ -208,34 +240,60 @@ def init_widgets_list():
             other_current_screen_border=colours[6],
             other_screen_border=colours[4],
             foreground=colours[2],
-            background=colours[0]
+            background=colours[0],
+            **decoration_group
         ),
-        # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-        # widget.StatusNotifier(
-        #   background=colours[0]),
         widget.Spacer(
             background=colour_trans_black,
             length=bar.STRETCH),
         widget.Systray(
-            background=colours[0]),
+            background=colours[0],
+            **decoration_group
+        ),
         widget.Sep(
             linewidth=0,
             padding=6,
             foreground=colours[2],
-            background=colours[0]
+            background=colours[0],
+            **decoration_group
         ),
-        widget.Memory(foreground=colours[6]),
+        widget.Memory(foreground=colours[6],
+                      **decoration_group),
         widget.Sep(
             linewidth=0,
             padding=6,
             foreground=colours[2],
-            background=colours[0]
+            background=colours[0],
+            **decoration_group
         ),
-        extra_widgets.PulseVolume(foreground=colours[4]),
+        widget.PulseVolume(foreground=colours[4],
+                           **decoration_group),
+        widget.Sep(
+            linewidth=0,
+            padding=6,
+            foreground=colours[2],
+            background=colours[0],
+            **decoration_group
+        ),
         widget.Clock(
             foreground=colours[6],
             background=colours[0],
-            format="%Y-%m-%d %a %I:%M %p"
+            format="%Y-%m-%d %a %I:%M %p",
+            **decoration_group
+        ),
+        widget.Sep(
+            linewidth=0,
+            padding=6,
+            foreground=colours[2],
+            background=colours[0],
+            **decoration_group
+        ),
+        widget.Battery(
+            background=colours[0],
+            charging_foreground=colours[4],
+            foreground=colours[2],
+            notify_below=20,
+            **decoration_group
         )
     ]
     return widgets_list
@@ -249,7 +307,7 @@ def init_widgets_screen1():
 
 def init_widgets_screen2():
     widgets_screen2 = init_widgets_list()
-    del widgets_screen2[6:8]
+    del widgets_screen2[8:9]
     return widgets_screen2
 
 
@@ -257,11 +315,15 @@ def init_screens():
     return [Screen(top=bar.Bar(widgets=init_widgets_screen1(),
                                margin=[6, 6, 2, 6],
                                background=colour_trans_black,
-                               size=20)),
+                               size=28)),
             Screen(top=bar.Bar(widgets=init_widgets_screen2(),
                                margin=[6, 6, 2, 6],
                                background=colour_trans_black,
-                               size=20))]
+                               size=28)),
+            Screen(top=bar.Bar(widgets=init_widgets_screen2(),
+                               margin=[6, 6, 2, 6],
+                               background=colour_trans_black,
+                               size=28))]
 
 
 if __name__ in ["config", "__main__"]:
@@ -304,7 +366,7 @@ reconfigure_screens = True
 auto_minimize = False
 
 
-@hook.subscribe.startup_once
+@ hook.subscribe.startup_once
 def start_once():
     home = os.path.expanduser("~")
     subprocess.call([home + "/.config/qtile/autostart.sh"])

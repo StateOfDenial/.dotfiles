@@ -1,0 +1,4 @@
+#!/bin/bash
+
+lp-sleep-toggle enable
+feh --bg-fill ~/Downloads/wallpaper-1.jpg

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+lp-sleep-toggle disable
+feh --bg-fill ~/Downloads/wallpaper-1.jpg
+qtile cmd-obj -o cmd -f reload_config

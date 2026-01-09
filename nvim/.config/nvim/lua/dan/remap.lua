@@ -27,7 +27,7 @@ vim.keymap.set("n", "<leader>tp", ":tabp<CR>")
 
 vim.keymap.set("n", "<leader>gp", ":Git push <CR>")
 
-vim.keymap.set("n", "<leader>tpd", ":terminal tf-provider-docs<CR>i")
+vim.keymap.set("n", "<leader>tpd", ":terminal tfpd<CR>i")
 
 vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
 vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
@@ -35,3 +35,5 @@ vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
 vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
+
+vim.keymap.set("n", "gl", "<cmd> lua vim.diagnostic.open_float()<CR>")

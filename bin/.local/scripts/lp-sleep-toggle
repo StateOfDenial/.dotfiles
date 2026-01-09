@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+mode=$1
+
+case "$mode" in
+    "enable")
+        # xautolock -enable
+        xset +dpms
+        xset s on
+        notify-send "Sleep settings" "Sleeping has been enabled"
+        ;;
+    "disable")
+        # xautolock -disable
+        xset -dpms
+        xset s off
+        notify-send "Sleep settings" "Sleeping has been disabled"
+        ;;
+    *)
+        notify-send "Sleep settings" "Invalid option passed in: $mode"
+        ;;
+esac

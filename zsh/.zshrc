@@ -1,3 +1,12 @@
+ssh-reagent() {
+    if ! ps -e | grep ssh-agent >/dev/null; then
+        eval `ssh-agent -s`
+    fi
+    export SSH_AUTH_SOCK=$(echo /tmp/ssh-*/agent.*)
+    ssh-add -l > /dev/null || ssh-add
+}
+
+ssh-reagent
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -41,6 +50,7 @@ alias vim="nvim"
 alias v="nvim"
 alias ls='ls --color=always'
 alias la='ls -la --color=always'
+alias tf='terraform'
 
 export PATH="$HOME/.local/scripts:$PATH"
 export PATH="$HOME/.local/kitty.app/bin:$PATH"
@@ -49,22 +59,37 @@ export PATH="$HOME/.npm-global/lib:$PATH"
 
 export EDITOR="nvim"
 
+if [ -d /home/linuxbrew ]; then
+  export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+fi
+
 autoload -U +X bashcompinit && bashcompinit
 
-export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+if [ -d "$HOME/.pyenv" ]; then
+  export PYENV_ROOT="$HOME/.pyenv"
+  command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init -)"
+fi
+
 if command -v goenv &>/dev/null; then
   eval "$(goenv init -)"
 fi
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+if [ -d "$HOME/.nvm" ]; then
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+fi
 
 if command -v brew >/dev/null; then
     export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib" 
     export CPPFLAGS="-I$(brew --prefix openssl)/include" 
     export CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)"
+fi
+
+# Get gcloud completion if it is installed
+if [ -f /usr/lib/google-cloud-sdk/completion.bash.inc ]; then
+    . /usr/lib/google-cloud-sdk/completion.bash.inc
 fi
 
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
@@ -107,14 +132,18 @@ if command -v batcat &>/dev/null; then
 fi
 
 if command -v fzf &>/dev/null; then
-    eval "$(fzf --zsh)"
-    #source /usr/share/doc/fzf/examples/key-bindings.zsh
-    #source /usr/share/doc/fzf/examples/completion.zsh
-    #export FZF_DEFAULT_OPTS='--preview "batcat -n --color always --line-range :50 {}"'
-    #export FZF_CTRL_R_OPTS="
-    #  --preview 'echo {}' --preview-window up:3:hidden:wrap
-    #  --bind 'ctrl-/:toggle-preview'
-    #  --bind 'ctrl-y:execute-silent(echo -n {2..} | wl-copy)+abort'"
+    # eval "$(fzf --zsh)"
+    source /usr/share/doc/fzf/examples/key-bindings.zsh
+    source /usr/share/doc/fzf/examples/completion.zsh
+    export FZF_DEFAULT_OPTS='--preview "batcat -n --color always --line-range :50 {}"'
+    export FZF_CTRL_R_OPTS="
+     --preview 'echo {}' --preview-window up:3:hidden:wrap
+     --bind 'ctrl-/:toggle-preview'
+     --bind 'ctrl-y:execute-silent(echo -n {2..} | wl-copy)+abort'"
+fi
+
+if command -v gh &>/dev/null; then
+    eval "$(gh completion --shell zsh)"
 fi
 
 bindkey -v
