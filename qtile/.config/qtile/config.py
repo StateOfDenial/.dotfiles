@@ -24,19 +24,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from colours import everforest  # custom theming
 from libqtile.dgroups import simple_key_binder
 import os
 import subprocess
 from libqtile import bar, layout, widget, hook
-from libqtile.config import Click, Drag, Group, Key, Match, Screen
+from libqtile.config import Click, Drag, Group, Key, Match, Screen, ScratchPad, DropDown
 from libqtile.lazy import lazy
 from libqtile.utils import send_notification
 from libqtile.log_utils import logger
+from libqtile.widget.battery import thunderbolt_smart_charge
 from qtile_extras.widget.decorations import RectDecoration
+import qtile_extras.widget as extrawidgets
 from libqtile import qtile
 
 mod = "mod4"
 terminal = "kitty"
+
+
+# Unused right now, need to reconcile with event listeners
+@lazy.function
+def max_by_switching_layout(qtile):
+    current_name = qtile.current_group.layout.name
+    if current_name == "monadtall":
+        qtile.current_group.layout = "max"
+    elif current_name == "max":
+        qtile.current_group.layout = "monadtall"
+
 
 keys = [
     # A list of available commands that can be bound to keys can be found
@@ -72,7 +86,7 @@ keys = [
     Key([mod, "mod1"], "n", lazy.layout.normalize(),
         desc="MonadTall normalize window"),
     Key([mod], "n", lazy.next_screen(), desc="Focus next monitor"),
-    Key([mod], "f", lazy.window.toggle_fullscreen()),
+    Key([mod], "f", lazy.window.toggle_fullscreen(), desc="Toggle fullscreen"),
     Key([mod], "t", lazy.window.toggle_floating()),
     # Toggle between split and unsplit sides of stack.
     # Split = all windows displayed
@@ -121,6 +135,7 @@ keys = [
     #     lazy.widget['backlight'].change_backlight(
     #         backlight.ChangeDirection.DOWN)
     #     )
+    Key([mod], "s", lazy.group["scratchpad"].dropdown_toggle("term")),
 ]
 
 
@@ -129,7 +144,20 @@ groups = [Group("DEV", layout="monadtall"),
           Group("MUS", layout="monadtall"),
           Group("PRES", layout="max"),
           Group("SYS", layout="monadtall"),
-          Group("DOC", layout="monadtall")]
+          Group("DOC", layout="monadtall"),
+          ScratchPad("scratchpad", [
+              DropDown("term", "kitty --hold", opacity=0.8),
+              DropDown("volume", "pavucontrol",
+                       x=0.6785, width=0.32, height=0.6, opacity=1,
+                       on_focus_lost_hide=True),
+              DropDown('calendar', "kitty ikhal",
+                       x=0.6785, width=0.32, height=0.997, opacity=1),
+              DropDown('process_mem', "kitty htop --sort-key=PERCENT_MEM --readonly",
+                       x=0.02, width=0.32, height=0.6, opacity=1),
+              DropDown('process_cpu', "kitty htop --sort-key=PERCENT_CPU --readonly",
+                       x=0.02, width=0.32, height=0.6, opacity=1),
+          ]),
+          ]
 
 # Allow MODKEY+[0 through 9] to bind to groups, see
 # https://docs.qtile.org/en/stable/manual/config/groups.html
@@ -146,7 +174,7 @@ layout_theme = {
 
 layouts = [
     layout.MonadTall(**layout_theme),
-    layout.Max(),
+    layout.Max(**layout_theme),
     layout.Columns(**layout_theme),
     layout.Floating(),
     # Try more layouts by unleashing below layouts.
@@ -162,23 +190,14 @@ layouts = [
 ]
 
 
-colours = [["#2E383C", "#2E383C"],  # BG
-           ["#282828", "#282828"],  # More black?
-           ["#D3C6AA", "#D3C6AA"],  # FG
-           ["#83C092", "#83C092"],  # Aqua
-           ["#A7C080", "#A7C080"],  # Green
-           ["#DBBC7F", "#DBBC7F"],  # Yellow
-           ["#7FBBB3", "#7FBBB3"],  # Blue
-           ["#D699B6", "#D699B6"],  # Purple
-           ["#E69875", "#E69875"],  # Red
-           ["#E67E80", "#E67E80"]]  # Status line 3
+theme = everforest
 colour_trans_black = ["#00000000", "#00000000", "#00000000"]
 
 widget_defaults = dict(
     font="sans",
     fontsize=16,
     padding=7,
-    background=colours[0]
+    background=theme["background"]
 )
 extension_defaults = widget_defaults.copy()
 
@@ -187,119 +206,103 @@ def init_widgets_list():
     decoration_group = {
         "decorations": [
             RectDecoration(
-                radius=15,
+                colour=theme["background"],
+                radius=5,
                 group=True,
-                filled=True,
+                filled=False,
             )
-        ]
+        ],
+        "padding": 6,
     }
+
     widgets_list = [
-        widget.Sep(
-            linewidth=0,
-            padding=6,
-            foreground=colours[2],
-            background=colours[0],
+        widget.DoNotDisturb(
+            background=theme["background"],
+            foreground=theme["foreground"],
             **decoration_group
         ),
         widget.OpenWeather(
             app_key="bdd7a522ba396eefafcc7934577d3fd8",
-            background=colours[0],
+            # background=theme["background"],
+            cityid="2063523",
             location="perth,AU",
-            foreground=colours[2],
-            decoration=[
-                RectDecoration(radius=111, filled=True)
-            ]
-        ),
-        widget.Sep(
-            linewidth=0,
-            padding=6,
-            foreground=colours[2],
-            background=colours[0],
+            foreground=theme["foreground"],
             **decoration_group
         ),
-        widget.DoNotDisturb(
-            background=colours[0],
-            foreground=colours[2],
+        widget.Memory(
+            background=theme["background"],
+            foreground=theme["blue"],
+            **decoration_group,
+            mouse_callbacks={
+                "Button3": lazy.group["scratchpad"].dropdown_toggle("process_mem")
+            }
         ),
-        widget.Spacer(
-            background=colour_trans_black,
-            length=bar.STRETCH),
-        widget.CurrentLayout(foreground=colours[2],
-                             background=colours[0],
-                             padding=5,
-                             **decoration_group),
+        widget.CPU(
+            background=theme["background"],
+            foreground=theme["blue"],
+            **decoration_group,
+            mouse_callbacks={
+                "Button3": lazy.group["scratchpad"].dropdown_toggle("process_cpu")
+            }
+        ),
+        widget.Spacer(background=colour_trans_black),
+        widget.CurrentLayout(
+            foreground=theme["foreground"],
+            background=theme["background"],
+            **decoration_group
+        ),
         widget.GroupBox(
             fontsize=13,
             margin_y=5,
             margin_x=0,
-            padding_y=5,
-            padding_x=3,
             borderwidth=3,
-            active=colours[2],
-            inactive=colours[7],
+            active=theme["foreground"],
+            inactive=theme["purple"],
             rounded=False,
-            highlight_color=colours[1],
+            highlight_color=theme["black"],
             highlight_method="line",
-            this_current_screen_border=colours[6],
-            this_screen_border=colours[4],
-            other_current_screen_border=colours[6],
-            other_screen_border=colours[4],
-            foreground=colours[2],
-            background=colours[0],
+            this_current_screen_border=theme["blue"],
+            this_screen_border=theme["green"],
+            other_current_screen_border=theme["blue"],
+            other_screen_border=theme["green"],
+            foreground=theme["foreground"],
             **decoration_group
         ),
-        widget.Spacer(
-            background=colour_trans_black,
-            length=bar.STRETCH),
-        widget.Systray(
-            background=colours[0],
+        widget.Spacer(background=colour_trans_black),
+        # widget.Systray(
+        #     **decoration_group
+        # ),
+        extrawidgets.StatusNotifier(
             **decoration_group
         ),
-        widget.Sep(
-            linewidth=0,
-            padding=6,
-            foreground=colours[2],
-            background=colours[0],
-            **decoration_group
-        ),
-        widget.Memory(foreground=colours[6],
-                      **decoration_group),
-        widget.Sep(
-            linewidth=0,
-            padding=6,
-            foreground=colours[2],
-            background=colours[0],
-            **decoration_group
-        ),
-        widget.PulseVolume(foreground=colours[4],
-                           **decoration_group),
-        widget.Sep(
-            linewidth=0,
-            padding=6,
-            foreground=colours[2],
-            background=colours[0],
-            **decoration_group
-        ),
+        widget.PulseVolume(foreground=theme["green"],
+                           **decoration_group,
+                           mouse_callbacks={
+            "Button3": lazy.group["scratchpad"].dropdown_toggle("volume")
+        }),
         widget.Clock(
-            foreground=colours[6],
-            background=colours[0],
-            format="%Y-%m-%d %a %I:%M %p",
-            **decoration_group
-        ),
-        widget.Sep(
-            linewidth=0,
-            padding=6,
-            foreground=colours[2],
-            background=colours[0],
-            **decoration_group
+            background=theme["background"],
+            foreground=theme["blue"],
+            format="%a %d %b %H:%M:%S",
+            mouse_callbacks={
+                "Button3": lazy.group["scratchpad"].dropdown_toggle("calendar")
+            },
+            **decoration_group,
         ),
         widget.Battery(
-            background=colours[0],
-            charging_foreground=colours[4],
-            foreground=colours[2],
+            background=theme["background"],
+            charging_foreground=theme["green"],
+            foreground=theme["foreground"],
+            low_percentage=0.2,
+            low_foreground=theme["red"],
             notify_below=20,
-            **decoration_group
-        )
+            **decoration_group,
+            mouse_callbacks={
+                "Button2": lazy.widget["battery"].charge_dynamically(),
+                "Button3": lazy.widget["battery"].charge_to_full()
+            },
+            charge_controller=thunderbolt_smart_charge
+        ),
     ]
     return widgets_list
 
@@ -312,7 +315,7 @@ def init_widgets_screen1():
 def init_widgets_screen2():
     widgets_screen2 = init_widgets_list()
     # Slicing removes unwanted widgets on secondary screen
-    del widgets_screen2[8:9]
+    # del widgets_screen2[8:9]
     return widgets_screen2
 
 
@@ -333,9 +336,6 @@ def init_screens():
 
 if __name__ in ["config", "__main__"]:
     screens = init_screens()
-    widgets_list = init_widgets_list()
-    widgets_screen1 = init_widgets_screen1()
-    widgets_screen2 = init_widgets_screen2()
 
 # Drag floating layouts.
 mouse = [
@@ -376,6 +376,8 @@ auto_minimize = False
 @hook.subscribe.setgroup
 def layout_change():
     for screen in qtile.screens:
+        if screen.group.name == "PRES":
+            continue
         if screen.width <= 1920:
             screen.group.setlayout("max")
         else:
