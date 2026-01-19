@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+
+HTOPRC=~/.config/htop/mem-htoprc htop --readonly

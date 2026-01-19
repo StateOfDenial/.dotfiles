@@ -1,4 +1,4 @@
 #!/bin/bash
 
 qtile cmd-obj -o cmd -f reload_config
-feh --bg-fill ~/Downloads/wallpaper-1.jpg
+# feh --bg-fill ~/Downloads/wallpaper-1.jpg
