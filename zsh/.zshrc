@@ -51,6 +51,10 @@ alias v="nvim"
 alias ls='ls --color=always'
 alias la='ls -la --color=always'
 alias tf='terraform'
+alias diff='diff --color'
+if [ -n "$TMUX" ]; then
+    alias rcd='cd "$(tmux display-message -p "#{session_path}")" || exit'
+fi
 
 export PATH="$HOME/.local/scripts:$PATH"
 export PATH="$HOME/.local/kitty.app/bin:$PATH"
@@ -85,6 +89,20 @@ if command -v brew >/dev/null; then
     export LDFLAGS="-Wl,-rpath,$(brew --prefix openssl)/lib" 
     export CPPFLAGS="-I$(brew --prefix openssl)/include" 
     export CONFIGURE_OPTS="--with-openssl=$(brew --prefix openssl)"
+fi
+
+if command -v claude >/dev/null; then
+    if command -v gcloud >/dev/null; then
+        export CLAUDE_CODE_USE_VERTEX=1
+        export CLOUD_ML_REGION=global
+        export ANTHROPIC_VERTEX_PROJECT_ID=fzo-gemini-dev
+    fi
+fi
+
+if command -v opencode >/dev/null; then
+    export VERTEX_LOCATION=global
+    export GOOGLE_CLOUD_PROJECT=fzo-gemini-dev
+    export GOOGLE_APPLICATION_CREDENTIALS=~/.config/gcloud/application_default_credentials.json
 fi
 
 # Get gcloud completion if it is installed
@@ -126,6 +144,11 @@ zinit cdreplay -q
 # Work related things
 [[ ! -f ~/.wprc ]] || source ~/.wprc
 
+# If direnv installed, eval the hook
+if command -v direnv &>/dev/null; then
+    eval "$(direnv hook zsh)"
+fi
+
 # If batcat is installed, alias cat
 if command -v batcat &>/dev/null; then
     alias cat=batcat
@@ -139,7 +162,7 @@ if command -v fzf &>/dev/null; then
     export FZF_CTRL_R_OPTS="
      --preview 'echo {}' --preview-window up:3:hidden:wrap
      --bind 'ctrl-/:toggle-preview'
-     --bind 'ctrl-y:execute-silent(echo -n {2..} | wl-copy)+abort'"
+     --bind 'ctrl-y:execute-silent(echo -n {2..} | wl-copy || echo -n {2..} | xclip -selection clipboard)+abort'"
 fi
 
 if command -v gh &>/dev/null; then

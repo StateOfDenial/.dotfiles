@@ -51,12 +51,13 @@ return {
                     }
                 end,
 
-                ["terraform-ls"] = function()
+                ["terraformls"] = function()
                     local lspconfig = require("lspconfig")
                     lspconfig.terraformls.setup {
+                        capabilities = capabilities,
                         cmd = { 'terraform-ls', 'serve', '-log-file', vim.fs.dirname(require('vim.lsp.log').get_filename()) .. "/terraform-ls.log" },
                         filetypes = { 'terraform', 'terraform-vars' },
-                        root_markers = { '.terraform', '.git' },
+                        root_dir = lspconfig.util.root_pattern(".terraform", ".git"),
                     }
                 end,
             }

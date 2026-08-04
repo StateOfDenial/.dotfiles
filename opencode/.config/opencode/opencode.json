@@ -1,0 +1,23 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "opencode-gemini-auth@latest",
+    "opencode-agent-tmux",
+    "@mohak34/opencode-notifier@latest",
+    "@datadog/opencode-plugin"
+  ],
+  "provider": {
+    "google": {
+      "options": {
+        "projectId": "fzo-gemini-dev"
+      }
+    }
+  },
+  "mcp": {
+    "datadog": {
+      "type": "remote",
+      "url": "https://mcp.us5.datadoghq.com/api/unstable/mcp-server/mcp",
+      "enabled": true
+    }
+  }
+}

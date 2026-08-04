@@ -25,7 +25,7 @@
     # dynamic width from 0 to 300
     # width = (0, 300)
     # constant width of 300
-    width = (200, 400)
+    width = 400
 
     # The height of a single notification, excluding the frame.
     # dynamic height from 0 to 300
@@ -36,7 +36,7 @@
     #       and the given value is treated as the maximum height
 
     # Position the notification in the top right corner
-    origin = top-right
+    origin = bottom-right
 
     # Offset from the origin
     # NOTE: Dunst from version 1.11 and older use this alternative notation
@@ -48,7 +48,7 @@
     scale = 0
 
     # Maximum number of notification (0 means no limit)
-    notification_limit = 10
+    notification_limit = 5
 
     ### Progress bar ###
 
@@ -118,7 +118,7 @@
     # If value is greater than 0, separator_height will be ignored and a border
     # of size frame_width will be drawn around each notification instead.
     # Click events on gaps do not currently propagate to applications below.
-    gap_size = 4
+    gap_size = 0
 
     # Define a color for the separator.
     # possible values are:
@@ -134,7 +134,7 @@
     #  * urgency_ascending: sort by urgency (low then normal then critical)
     #  * urgency_descending: sort by urgency (critical then normal then low)
     #  * update: sort by update (most recent always at the top)
-    sort = yes
+    sort = update
 
     # Don't remove messages, if the user is idle (no mouse or keyboard input)
     # for longer than idle_threshold seconds.
@@ -253,7 +253,7 @@
     ### Misc/Advanced ###
 
     # dmenu path.
-    dmenu = /usr/bin/dmenu -l 10 -p dunst:
+    dmenu = /usr/local/bin/vicinae dmenu -n dunst
 
     # Browser for opening urls in context menu.
     browser = /usr/bin/xdg-open
@@ -279,7 +279,7 @@
     #
     # Comma-separated list of the corners. The accepted corner values are bottom-right,
     # bottom-left, top-right, top-left, top, bottom, left, right or all.
-    corners = bottom, top-left
+    corners = bottom-left, top
 
     # Ignore the dbus closeNotification message.
     # Useful to enforce the timeout set by dunst configuration. Without this
@@ -368,6 +368,10 @@
     override_pause_level = 60
     # Icon for notifications with critical urgency
     default_icon = dialog-warning
+
+[play_sound]
+summary = "*"
+script = ~/.local/scripts/dunst_alert.sh
 
 # Every section that isn't one of the above is interpreted as a rules to
 # override settings for certain messages.

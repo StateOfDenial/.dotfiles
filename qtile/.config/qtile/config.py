@@ -138,9 +138,9 @@ groups = [Group("DEV", layout="monadtall"),
                        on_focus_lost_hide=True),
               DropDown('calendar', "kitty ikhal",
                        x=0.6785, width=0.32, height=0.997, opacity=1),
-              DropDown('process_mem', "kitty htop-mem",
+              DropDown('process_mem', "kitty sh -c 'HTOPRC=~/.config/htop/mem-htoprc htop --readonly'",
                        x=0.02, width=0.32, height=0.6, opacity=1),
-              DropDown('process_cpu', "kitty htop-cpu",
+              DropDown('process_cpu', "kitty sh -c 'HTOPRC=~/.config/htop/cpu-htoprc htop --readonly'",
                        x=0.02, width=0.32, height=0.6, opacity=1),
           ]),
           ]
@@ -179,7 +179,7 @@ theme = everforest
 colour_trans_black = ["#00000000", "#00000000", "#00000000"]
 
 widget_defaults = dict(
-    font="sans",
+    font="MesloLGS NF",
     fontsize=16,
     padding=7,
 )
@@ -212,7 +212,10 @@ def init_widgets_list():
             **decoration_group
         ),
         extrawidgets.Memory(
-            foreground=theme["blue"],
+            foreground=theme["green"],
+            format="{MemUsed:.0f}{mm}/{MemTotal:.0f}{mm}",
+            measure_mem="G",
+            update_interval=2.0,
             **decoration_group,
             mouse_callbacks={
                 "Button3": lazy.group["scratchpad"].dropdown_toggle("process_mem")
@@ -220,6 +223,8 @@ def init_widgets_list():
         ),
         extrawidgets.CPU(
             foreground=theme["blue"],
+            format="{freq_current}GHz {load_percent}%",
+            update_interval=2.0,
             **decoration_group,
             mouse_callbacks={
                 "Button3": lazy.group["scratchpad"].dropdown_toggle("process_cpu")
@@ -255,11 +260,17 @@ def init_widgets_list():
         extrawidgets.StatusNotifier(
             **decoration_group
         ),
-        extrawidgets.PulseVolume(foreground=theme["green"],
-                                 **decoration_group,
-                                 mouse_callbacks={
-            "Button3": lazy.group["scratchpad"].dropdown_toggle("volume")
-        }),
+        extrawidgets.PulseVolume(
+            foreground=theme["green"],
+            **decoration_group,
+            mouse_callbacks={
+                "Button3": lazy.group["scratchpad"].dropdown_toggle("volume")
+            }),
+        extrawidgets.BrightnessControl(
+            bar_colour=theme["foreground"],
+            error_colour=theme["red"],
+            **decoration_group
+        ),
         extrawidgets.Clock(
             foreground=theme["blue"],
             format="%a %d %b %H:%M:%S",
@@ -268,18 +279,30 @@ def init_widgets_list():
             },
             **decoration_group,
         ),
-        extrawidgets.Battery(
-            charging_foreground=theme["green"],
+        extrawidgets.WiFiIcon(
             foreground=theme["foreground"],
-            low_percentage=0.2,
-            low_foreground=theme["red"],
-            notify_below=20,
-            **decoration_group,
-            mouse_callbacks={
-                "Button2": lazy.widget["battery"].charge_dynamically(),
-                "Button3": lazy.widget["battery"].charge_to_full()
-            },
+            disconnected_colour=theme["red"],
+            active_colour=theme["green"],
+            internet_check_timeout=10,
+            update_interval=2,
+            interface="wlp44s0",
+            **decoration_group
         ),
+        extrawidgets.BatteryIcon(
+            **decoration_group
+        )
+        # extrawidgets.Battery(
+        #     charging_foreground=theme["green"],
+        #     foreground=theme["foreground"],
+        #     low_percentage=0.2,
+        #     low_foreground=theme["red"],
+        #     notify_below=20,
+        #     **decoration_group,
+        #     mouse_callbacks={
+        #         "Button2": lazy.widget["battery"].charge_dynamically(),
+        #         "Button3": lazy.widget["battery"].charge_to_full()
+        #     },
+        # ),
     ]
     return widgets_list
 

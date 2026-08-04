@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+feh --bg-fill ~/Downloads/wallpaper-1.jpg

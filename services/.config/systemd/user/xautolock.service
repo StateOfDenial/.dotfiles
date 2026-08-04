@@ -1,0 +1,21 @@
+[Unit]
+After=graphical-session.target
+Description=Xautolock locker
+PartOf=graphical-session.target
+# ConditionEnvironment=DESKTOP_SESSION=qtile
+# Try to restart up to 3 times
+StartLimitBurst=3
+# Don't try to restart after 60 seconds
+StartLimitIntervalSec=60
+
+[Service]
+ExecStart=xautolock -time 15 -locker "i3lock-fancy -g" -detectsleep \
+    -killtime 40 -killer "systemctl suspend" \
+    -notify 40 -notifier "notify-send -u critical 'Auto Lock' 'Will sleep in 30 seconds!'"
+# Try to restart no matter how the process ended
+Restart=always
+# Restart in 5 second intervals
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
