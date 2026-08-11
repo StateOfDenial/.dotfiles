@@ -57,6 +57,9 @@
       neovim
       gcc
       lua51Packages.luarocks
+
+      sops
+      age
     ];
   };
 }

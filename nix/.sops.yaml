@@ -1,0 +1,9 @@
+keys:
+  - &denial age1rh5h5xkx6p76zlheg2dtwa2cex9xrtjskmedtap4vaq8mtwxrd0sth88ru
+  - &main age1wez8ek0932naccgl3csk4umu8dvd2x5cwgqyur2jhe2ynq6gcu2sjyzq99
+creation_rules:
+  - path_regex: ^secrets\.yaml$
+    key_groups:
+      - age:
+          - *denial
+          - *main

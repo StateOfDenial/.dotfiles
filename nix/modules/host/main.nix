@@ -6,7 +6,7 @@
         fsType = "cifs";
         options = let
           automount_opts = "x-systemd.automount,noauto,x-systemd.idle-timeout=60,x-systemd.device-timeout=5s,x-systemd.mount-timeout=5s,user,users";
-        in [ "${automount_opts},credentials=/etc/nixos/smb_secrets,uid=1000,gid=100" ];
+        in [ "${automount_opts},credentials=/run/secrets/smb-secrets,uid=1000,gid=100" ];
         inherit device;
       };
     in {
@@ -20,6 +20,7 @@
         inputs.self.modules.nixos.storage
         inputs.self.modules.nixos.virtualisation
         inputs.self.modules.nixos.dev
+        inputs.self.modules.nixos.secrets
         ../../hosts/main/hardware-configuration.nix
       ];
 
@@ -48,6 +49,12 @@
       fileSystems."/mnt/share" = mkCifs "//home.denial.id.au/denial";
 
       fileSystems."/mnt/everyone" = mkCifs "//home.denial.id.au/Shared Folder";
+
+      sops.secrets."smb-secrets" = {
+        owner = "root";
+        group = "root";
+        mode = "0600";
+      };
 
       environment.systemPackages = with pkgs; [
         cifs-utils
