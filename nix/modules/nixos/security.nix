@@ -36,6 +36,12 @@
     programs.gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
+      settings = {
+        default-cache-ttl = 3600;       # keep unlocked 1h after last use
+        max-cache-ttl    = 86400;       # never prompt again for 24h
+        default-cache-ttl-ssh = 3600;
+        max-cache-ttl-ssh    = 86400;
+      };
     };
     services.pcscd.enable = true;
 
