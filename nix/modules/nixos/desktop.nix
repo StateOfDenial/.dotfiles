@@ -94,8 +94,6 @@
       swaylock-effects
       pavucontrol
       hyprpicker
-      quickshell
-      libsForQt5.qt5.qtdeclarative
       (waybar.overrideAttrs (oldAttrs: {
         mesonFlags = oldAttrs.mesonFlags ++ [ "-Dexperimental=true" ];
       }))
