@@ -1,6 +1,5 @@
 -- See https://wiki.hypr.land/Configuring/Basics/Autostart/
 hl.on("hyprland.start", function()
-    hl.exec_cmd("wlr-randr --output DP-1 --pos -1920x0 --output DP-2 --pos 0x0 --primary")
     hl.exec_cmd("/home/denial/.local/scripts/launch-waybar")
     hl.exec_cmd("awww-daemon && sleep 1 && awww img ~/Downloads/greenforest.jpg")
     hl.exec_cmd("USE_LAYER_SHELL=0 vicinae server")
