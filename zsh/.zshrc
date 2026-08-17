@@ -52,6 +52,7 @@ alias ls='ls --color=always'
 alias la='ls -la --color=always'
 alias tf='terraform'
 alias diff='diff --color'
+alias oa='opencode attach http://localhost:4096 --dir .'
 if [ -n "$TMUX" ]; then
     alias rcd='cd "$(tmux display-message -p "#{session_path}")" || exit'
 fi
