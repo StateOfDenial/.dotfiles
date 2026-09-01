@@ -7,7 +7,7 @@
     // Choose the order of the modules
     "modules-left": ["idle_inhibitor", "cpu", "memory", "temperature"],
     "modules-center": ["hyprland/workspaces"],
-    "modules-right": [ "tray", "pulseaudio", "network", "clock"],
+    "modules-right": [ "tray", "pulseaudio", "network", "clock", "battery"],
     // Modules configuration
      "hyprland/workspaces": {
          "disable-scroll": true,
@@ -100,6 +100,12 @@
             "default": ["", "", ""]
         },
         "on-click": "hdrop -f -c org.pulseaudio.pavucontrol  -p right -h 60 -w 20 pavucontrol"
+    },
+    "battery": {
+        "format": "{capacity}% {icon}",
+        "format-icons": ["", "", "", "", ""],
+        "format-charging": " {capacity}%",
+        "format-plugged": " {capacity}%"
     }
 }
 

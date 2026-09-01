@@ -54,3 +54,34 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl s 5%-"))
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"))
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"))
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"))   
+
+hl.bind("XF86RFKill", hl.dsp.exec_cmd("notify-send 'test'"))   
+hl.bind("SUPER + period", hl.dsp.layout("move +col"))
+hl.bind("SUPER + comma", hl.dsp.layout("move -col"))
+
+hl.bind("SUPER + F1", function ()
+    local game_mode = (hl.get_config("animations.enabled") == false)
+
+    if game_mode then
+        hl.exec_cmd("hyprctl reload")
+        return
+    end
+    
+    hl.config({
+        general = {
+            gaps_in = 0, gaps_out = 0, -- Disable gaps  
+            border_size = 0,
+        },
+
+        animations = {
+            enabled = false, -- Disable animations
+        },
+        
+        -- Disable blur, shadow and window rounding
+        decoration = {
+            shadow = { enabled = false },
+            blur = { enabled = false },
+            rounding = 0,
+        }
+    })
+end)

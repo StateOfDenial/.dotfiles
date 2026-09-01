@@ -1,6 +1,8 @@
 { ... }:
 {
   flake.modules.nixos.dev = { config, lib, pkgs, ... }: {
+    programs.nix-ld.enable = true;
+
     environment.systemPackages = with pkgs; [
       go
       pyenv # manage python environments/versions

@@ -11,7 +11,7 @@ hl.config({
             inactive_border = "rgba(2d353baa)",
         },
 
-        layout = "master",
+        layout = "scrolling",
 
         -- Please see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/ before you turn this on
         allow_tearing = false,
@@ -38,6 +38,10 @@ hl.config({
     master = {
         new_status = "slave",
         orientation = "left",
+    },
+
+    scrolling = {
+        column_width = 0.5,
     },
 
     misc = {

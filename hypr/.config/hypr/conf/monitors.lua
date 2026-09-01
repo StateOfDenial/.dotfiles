@@ -39,3 +39,14 @@ hl.device({
     name   = "remarkable-pen",
     output = "DP-1",
 })
+
+hl.on("workspace.move_to_monitor", function(ws, m)
+    local layout = "scrolling"
+    if m.width / m.scale >= 1800 then
+        layout = "master"
+    end
+    hl.workspace_rule({
+        workspace = tostring(ws.id),
+        layout = layout,
+    })
+end)

@@ -5,6 +5,3 @@ hl.config({
         no_update_news = true,
     },
 })
-
-hl.env("HYPRCURSOR_THEME", "Capitaine Cursors")
-hl.env("HYPRCURSOR_SIZE", "24")
