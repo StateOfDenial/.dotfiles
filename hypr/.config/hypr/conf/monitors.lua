@@ -40,13 +40,50 @@ hl.device({
     output = "DP-1",
 })
 
-hl.on("workspace.move_to_monitor", function(ws, m)
-    local layout = "scrolling"
+local function layoutForMonitor(m)
     if m.width / m.scale >= 1800 then
-        layout = "master"
+        return "master"
+    end
+    return "scrolling"
+end
+
+local function workspaceKey(ws)
+    if ws.special then
+        return ws.name
+    end
+    return "name:" .. ws.name
+end
+
+local function applyLayoutRule(ws)
+    hl.workspace_rule({
+        workspace = workspaceKey(ws),
+        layout = "scrolling",
+    })
+end
+
+local function applyWidthLayoutRule(ws)
+    local m = ws.monitor
+    if not m then
+        return
     end
     hl.workspace_rule({
-        workspace = tostring(ws.id),
-        layout = layout,
+        workspace = workspaceKey(ws),
+        layout = layoutForMonitor(m),
     })
+end
+
+hl.on("workspace.created", function(ws)
+    if ws.special then
+        applyLayoutRule(ws)
+        return
+    end
+    applyWidthLayoutRule(ws)
+end)
+
+hl.on("workspace.move_to_monitor", function(ws)
+    if ws.special then
+        applyLayoutRule(ws)
+        return
+    end
+    applyWidthLayoutRule(ws)
 end)
