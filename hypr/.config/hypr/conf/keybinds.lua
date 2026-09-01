@@ -3,7 +3,7 @@ local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Launch / window management
 hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd("ghostty"))
-hl.bind(mainMod .. " + W", hl.dsp.window.kill())
+hl.bind(mainMod .. " + W", hl.dsp.window.close())
 hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("rofi -show drun run"))

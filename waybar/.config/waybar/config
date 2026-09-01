@@ -99,7 +99,7 @@
             "car": "",
             "default": ["", "", ""]
         },
-        "on-click": "pavucontrol"
+        "on-click": "hdrop -f -c org.pulseaudio.pavucontrol  -p right -h 60 -w 20 pavucontrol"
     }
 }
 
