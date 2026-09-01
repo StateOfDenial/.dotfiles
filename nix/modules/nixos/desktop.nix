@@ -115,6 +115,7 @@
       dracula-icon-theme
       everforest-gtk-theme
       material-icons
+      everforest-cursors
 
       # Apps
       brave

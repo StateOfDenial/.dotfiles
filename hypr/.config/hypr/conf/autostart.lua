@@ -7,5 +7,7 @@ hl.on("hyprland.start", function()
     -- theming with cursor
     hl.exec_cmd("dconf write /org/gnome/desktop/interface/gtk-theme \"'Capitaine Cursors'\"")
     hl.exec_cmd("hyprctl setcursor 'Capitaine Cursors' 24")
+    hl.exec_cmd("hypridle")
+    hl.exec_cmd("hyprctl setcursor everforest-cursors-light 48")
     hl.exec_cmd("easyeffects --service-mode -w")
 end)

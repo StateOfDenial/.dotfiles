@@ -27,7 +27,7 @@
       networking.hostName = "laptop";
       networking.firewall.enable = false;
 
-      system.stateVersion = "23.11";
+      system.stateVersion = "26.05";
 
       hardware.bluetooth = {
         enable = true;
@@ -48,11 +48,19 @@
 
       environment.systemPackages = with pkgs; [
         cifs-utils
+        brightnessctl
+        playerctl
       ];
+
+      services.fprintd = {
+        enable = true;
+        tod.enable = true;
+        tod.driver = pkgs.libfprint-2-tod1-goodix;
+      };
     };
 
-  flake.nixosConfigurations.main = inputs.nixpkgs.lib.nixosSystem {
+  flake.nixosConfigurations.laptop = inputs.nixpkgs.lib.nixosSystem {
     system = "x86_64-linux";
-    modules = [ inputs.self.modules.nixos.main ];
+    modules = [ inputs.self.modules.nixos.laptop ];
   };
 }
