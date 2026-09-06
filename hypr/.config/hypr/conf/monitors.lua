@@ -8,6 +8,8 @@ hl.monitor({
     scale    = 1,
     bitdepth = 10,
     vrr      = 3,
+    sdrbrightness = 1.2,
+    sdrsaturation = 1.05,
 })
 
 -- Secondary home desk monitor
